@@ -1,0 +1,2 @@
+# checkers
+Client - server project
