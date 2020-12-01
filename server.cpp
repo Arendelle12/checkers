@@ -9,10 +9,15 @@
 #define BUF_SIZE 1024
 #define MAX_NUM_OF_CLIENTS 100
 
+
+
 struct client_info
 {
     int client_socket_descriptor;
     int id;
+    int *position_in_clients_array;
+    int *second_player_fd;
+    pthread_mutex_t *connection_mutex;
 };
 
 void *ThreadBehavior(void *client)
@@ -21,9 +26,12 @@ void *ThreadBehavior(void *client)
     pthread_detach(pthread_self());
     struct client_info *t_client = (struct client_info *)client;
 
+    int my_id = (*t_client).id;
+    printf("My id: %d\n", my_id);
+
     char tab[BUF_SIZE];
     int n = read((*t_client).client_socket_descriptor, tab, sizeof(tab));
-    if (n == -1){
+    /*if (n == -1){
         printf("Read error occures\n");
         close((*t_client).client_socket_descriptor);
         free(t_client);
@@ -32,14 +40,24 @@ void *ThreadBehavior(void *client)
         printf("Client disconnected\n");
         close((*t_client).client_socket_descriptor);
         free(t_client);
+    }*/
+    if(n <= 0)
+    {
+        pthread_mutex_lock((*t_client).connection_mutex);
+        *(*t_client).position_in_clients_array = -1;
     }
     tab[n] = 0;
     printf("%s\n", tab);
 
-    char buf[BUF_SIZE]; 
-    n = sprintf(buf, "%s", "Hello client");
-    printf("%d\n", n);
-    write((*t_client).client_socket_descriptor, buf, n);
+
+
+    //char buf[BUF_SIZE]; 
+    //n = sprintf(buf, "%s", "Hello client");
+    //printf("%d\n", n);
+    while(*(*t_client).second_player_fd == -1){
+        sleep(1);
+    }
+    write(*(*t_client).second_player_fd, tab, n);
 
     sleep(5);
 
@@ -47,7 +65,7 @@ void *ThreadBehavior(void *client)
 
 }
 
-void handleConnection(int connection_socket_descriptor, int client_id)
+void handleConnection(int connection_socket_descriptor, int client_id, int *position_in_clients_array, int *second_player_fd, pthread_mutex_t *connection_mutex)
 {
     int create_result = 0;
     pthread_t thread1;
@@ -56,6 +74,13 @@ void handleConnection(int connection_socket_descriptor, int client_id)
     struct client_info *client = (client_info *)malloc(sizeof(struct client_info));
     (*client).client_socket_descriptor = connection_socket_descriptor;
     (*client).id = client_id;
+    //nie wiem, czy to przypisanie jest poprawne
+    (*client).position_in_clients_array = position_in_clients_array;
+    (*client).second_player_fd = second_player_fd;
+    (*client).connection_mutex = connection_mutex;
+
+    //printf("player2 id??? : %p\n", second_player_fd);
+    printf("player2 fd : %d\n", *second_player_fd);
 
     create_result = pthread_create(&thread1, NULL, ThreadBehavior, (void *)client);
     if(create_result)
@@ -75,9 +100,12 @@ int main(){
     int bind_result;
     int listen_result;
     int connection_socket_descriptor;
-    pthread_mutex_t connection_mutex = PTHREAD_MUTEX_INITIALIZER;
+    
     int connected_clients = 0;
     int client_id;
+    int player_two_id;
+
+    pthread_mutex_t connection_mutex = PTHREAD_MUTEX_INITIALIZER;
 
     //inicjalizacja tablicy clients wartoscia -1
     for(int i = 0; i < MAX_NUM_OF_CLIENTS; i++)
@@ -134,6 +162,7 @@ int main(){
             printf("Server accept failed\n");
             exit(1);
         }
+        printf("Deskryptor klienta: %d\n", connection_socket_descriptor);
 
         //Dodajemy klienta do tablicy clients -> wpisujemy connection_socket_descriptor tam, gdzie jest -1 
         pthread_mutex_lock(&connection_mutex);
@@ -147,10 +176,19 @@ int main(){
                     clients[i] = connection_socket_descriptor;
                     client_id = i;
                     connected_clients++;
-                    printf("Liczba polaczonych klientow: %d, id klienta: %d\n", connected_clients, client_id);
+                    //printf("Liczba polaczonych klientow: %d, id klienta: %d\n", connected_clients, client_id);
                     break;
                 }
             }
+            if(client_id % 2 == 0)
+            {
+                player_two_id = client_id + 1;
+            }
+            else
+            {
+                player_two_id = client_id - 1;
+            }
+            printf("pl2 id po wyliczeniu : %d\n", player_two_id);
         }
         else
         {
@@ -160,7 +198,13 @@ int main(){
 
         pthread_mutex_unlock(&connection_mutex);
 
-        handleConnection(connection_socket_descriptor, client_id);
+        //chcialabym miec dostep do wartosci, ktora znajduje sie na pozycji player_two_id w tablicy clients
+        //ale nie mam kompletnie pojecia, czy to tak dziala XD
+
+        
+        handleConnection(connection_socket_descriptor, client_id, &clients[client_id], &clients[player_two_id], &connection_mutex);
+        
+            
 
 
 
