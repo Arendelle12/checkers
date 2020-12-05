@@ -17,6 +17,7 @@ struct client_info
     int id;
     int *position_in_clients_array;
     int *second_player_fd;
+    int *connected_clients;
     pthread_mutex_t *connection_mutex;
 };
 
@@ -45,6 +46,11 @@ void *ThreadBehavior(void *client)
     {
         pthread_mutex_lock((*t_client).connection_mutex);
         *(*t_client).position_in_clients_array = -1;
+        (*t_client).connected_clients--;
+        close((*t_client).client_socket_descriptor);
+        free(t_client);
+        pthread_mutex_unlock((*t_client).connection_mutex);
+        pthread_exit(NULL);
     }
     tab[n] = 0;
     printf("%s\n", tab);
@@ -65,22 +71,13 @@ void *ThreadBehavior(void *client)
 
 }
 
-void handleConnection(int connection_socket_descriptor, int client_id, int *position_in_clients_array, int *second_player_fd, pthread_mutex_t *connection_mutex)
+void handleConnection(struct client_info *client)
 {
     int create_result = 0;
     pthread_t thread1;
 
-    //struct client_info *client = malloc(sizeof(struct client_info));
-    struct client_info *client = (client_info *)malloc(sizeof(struct client_info));
-    (*client).client_socket_descriptor = connection_socket_descriptor;
-    (*client).id = client_id;
-    //nie wiem, czy to przypisanie jest poprawne
-    (*client).position_in_clients_array = position_in_clients_array;
-    (*client).second_player_fd = second_player_fd;
-    (*client).connection_mutex = connection_mutex;
-
-    //printf("player2 id??? : %p\n", second_player_fd);
-    printf("player2 fd : %d\n", *second_player_fd);
+    int second_player_id = *(*client).second_player_fd;
+    printf("player2 fd : %d\n", second_player_id);
 
     create_result = pthread_create(&thread1, NULL, ThreadBehavior, (void *)client);
     if(create_result)
@@ -119,7 +116,7 @@ int main(){
     server_address.sin_port = htons(1234);
     server_address.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    //deskryptor gniazda sockfd
+    //deskryptor gniazda - server_socket_descriptor
     server_socket_descriptor = socket(AF_INET, SOCK_STREAM, 0);
     if(server_socket_descriptor < 0)
     {
@@ -127,18 +124,16 @@ int main(){
         exit(1);
     }
 
-    //setsockopt
-    //int nFoo = 1;
+    //setsockopt - opcje socketu
     socklen_t len = sizeof(option_value);  
     setsockopt_result = setsockopt(server_socket_descriptor, SOL_SOCKET, SO_REUSEADDR, &option_value, len);
-    //setsockopt_result = setsockopt(server_socket_descriptor, SOL_SOCKET, SO_REUSEADDR, (char*)&option_value, sizeof(option_value));
     if(setsockopt_result != 0)
     {
         printf("Setsockopt failed\n");
         exit(1);
     }
     
-    
+    //bind - dowiazanie nazwy do socketu
     bind_result = bind(server_socket_descriptor, (const struct sockaddr *)&server_address, sizeof(server_address));
     if(bind_result < 0)
     {
@@ -146,6 +141,7 @@ int main(){
         exit(1);
     }
 
+    //listen - nasluchiwanie na polaczenia na sockecie
     listen_result = listen(server_socket_descriptor, MAX_NUM_OF_CLIENTS);
     if(listen_result < 0)
     {
@@ -180,6 +176,7 @@ int main(){
                     break;
                 }
             }
+            //wyliczanie id drugiego gracza
             if(client_id % 2 == 0)
             {
                 player_two_id = client_id + 1;
@@ -198,11 +195,18 @@ int main(){
 
         pthread_mutex_unlock(&connection_mutex);
 
-        //chcialabym miec dostep do wartosci, ktora znajduje sie na pozycji player_two_id w tablicy clients
-        //ale nie mam kompletnie pojecia, czy to tak dziala XD
+
+        struct client_info *client = (client_info *)malloc(sizeof(struct client_info));
+        (*client).client_socket_descriptor = connection_socket_descriptor;
+        (*client).id = client_id;        
+        (*client).position_in_clients_array = &clients[client_id];
+        (*client).second_player_fd = &clients[player_two_id];
+        (*client).connected_clients = &connected_clients;
+        (*client).connection_mutex = &connection_mutex;
+
 
         
-        handleConnection(connection_socket_descriptor, client_id, &clients[client_id], &clients[player_two_id], &connection_mutex);
+        handleConnection(client);
         
             
 
