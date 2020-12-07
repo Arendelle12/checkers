@@ -1,7 +1,7 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <string.h>
+#include <cstring>
 #include <unistd.h>
 #include <pthread.h>
 #include <cstdlib>
@@ -31,6 +31,11 @@ void *ThreadBehavior(void *client)
     printf("My id: %d\n", my_id);
 
     char tab[BUF_SIZE];
+
+    //odbieramy napis od klienta o parzystym id
+    //zamieniamy napis na tablice
+    //zamieniamy tablice na napis
+    //wysylamy napis do klienta o nieparzystym id
     int n = read((*t_client).client_socket_descriptor, tab, sizeof(tab));
     /*if (n == -1){
         printf("Read error occures\n");
@@ -54,8 +59,45 @@ void *ThreadBehavior(void *client)
     }
     tab[n] = 0;
     printf("%s\n", tab);
+    /*for (int i = 0; i < n; i++)
+    {
+        printf("%c\n", tab[i]);
+    }*/
+    
+    //ZAMIANA TABLICY CHAROW NA TABLICE INT
+    int buf[n];
+    for(int i = 0; i < n; i++)
+    {
+        buf[i] = tab[i] - '0';
+        //printf("%d\n", buf[i]);
+    }
 
+    //ZAMIANA TABLICY 1D NA 2D
+    int temp[2][3];
+    for(int i = 0; i < 2; i++)
+    {
+        for(int j = 0; j < 3; j++)
+        {
+            temp[i][j] = buf[i*3+j];
+            //printf("Element na pozycji temp[%d][%d] wynosi %d\n", i, j, temp[i][j]);
+        }
+    }
 
+    //ZAMIANA TABLICY 2D NA 1D
+    int temp1[n];
+    for(int i = 0; i < n; i++)
+    {
+        temp1[i] = temp[i/3][i%3];
+        //printf("Element na pozycji temp1[%d] wynosi %d\n", i, temp1[i]);
+    }
+
+    //ZAMIANA TABLICY INT NA TABLICE CHAROW
+    char temp2[n];
+    for(int i = 0; i < n; i++)
+    {
+        temp2[i] = temp1[i] + '0';
+        //printf("%c\n", temp2[i]);
+    }
 
     //char buf[BUF_SIZE]; 
     //n = sprintf(buf, "%s", "Hello client");
@@ -76,8 +118,8 @@ void handleConnection(struct client_info *client)
     int create_result = 0;
     pthread_t thread1;
 
-    int second_player_id = *(*client).second_player_fd;
-    printf("player2 fd : %d\n", second_player_id);
+    //int second_player_id = *(*client).second_player_fd;
+    //printf("player2 fd : %d\n", second_player_id);
 
     create_result = pthread_create(&thread1, NULL, ThreadBehavior, (void *)client);
     if(create_result)
@@ -158,7 +200,7 @@ int main(){
             printf("Server accept failed\n");
             exit(1);
         }
-        printf("Deskryptor klienta: %d\n", connection_socket_descriptor);
+        //printf("Deskryptor klienta: %d\n", connection_socket_descriptor);
 
         //Dodajemy klienta do tablicy clients -> wpisujemy connection_socket_descriptor tam, gdzie jest -1 
         pthread_mutex_lock(&connection_mutex);
@@ -185,7 +227,7 @@ int main(){
             {
                 player_two_id = client_id - 1;
             }
-            printf("pl2 id po wyliczeniu : %d\n", player_two_id);
+            //printf("pl2 id po wyliczeniu : %d\n", player_two_id);
         }
         else
         {
