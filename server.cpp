@@ -8,6 +8,8 @@
 
 #define BUF_SIZE 1024
 #define MAX_NUM_OF_CLIENTS 100
+#define ROWS 8
+#define COLUMNS 8
 
 
 
@@ -20,6 +22,54 @@ struct client_info
     int *connected_clients;
     pthread_mutex_t *connection_mutex;
 };
+
+struct game
+{
+    int *board;
+    int turn;
+    int player1;
+    int player2;
+    int move[4];
+};
+
+int *createBoard()
+{
+    static int board[ROWS * COLUMNS];
+    for(int row = 0; row < ROWS; row++)
+    {
+        for(int col = 0; col < COLUMNS; col++)
+        {
+            if(row < 3)
+            {
+                if((row%2 == 0 && col%2 == 1) || (row%2 == 1 && col%2 == 0))
+                {
+                    board[row * ROWS + col] = 1;
+                }
+            }
+            else if(row > 4)
+            {
+                if((row%2 == 1 && col%2 == 0) || (row%2 == 0 && col%2 == 1))
+                {
+                    board[row * ROWS + col] = 2;
+                }
+            }
+            else
+            {
+                board[row * ROWS + col] = 0;
+            }
+            
+        }
+    }
+    /*printf("Inside function\n");
+    for(int i = 0; i < ROWS; i ++){
+        for(int j = 0; j < COLUMNS; j++)
+        {
+            printf("%d, ", board[i * ROWS + j]);
+        }
+        printf("\n");
+    }*/
+    return board;
+}
 
 void *ThreadBehavior(void *client)
 {
@@ -36,7 +86,7 @@ void *ThreadBehavior(void *client)
     //zamieniamy napis na tablice
     //zamieniamy tablice na napis
     //wysylamy napis do klienta o nieparzystym id
-    int n = read((*t_client).client_socket_descriptor, tab, sizeof(tab));
+    int n = read((*t_client).client_socket_descriptor, tab, sizeof(tab)-1);
     /*if (n == -1){
         printf("Read error occures\n");
         close((*t_client).client_socket_descriptor);
@@ -151,6 +201,18 @@ int main(){
     {
         clients[i] = -1;
     }
+
+    int* board = createBoard();
+    for(int i = 0; i < ROWS; i++)
+    {
+        for(int j = 0; j < COLUMNS; j++)
+        {
+            printf("%d, ", board[i * ROWS + j]);
+        }
+        printf("\n");
+    }
+
+
 
     //inicjalizacja gniazda serwera
     memset(&server_address, 0, sizeof(server_address));
