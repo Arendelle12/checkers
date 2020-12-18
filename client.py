@@ -17,10 +17,39 @@ def str_to_list(test_str):
 
 #print(res)
 
+#ZAMIANA 1D LIST NA 2D
+
+def convert_1d_to_2d(lst, len_lst):
+    it = iter(lst)
+    return [list(islice(it, i)) for i in len_lst]
+
+#lst = [1,2,3,4,5,6,7,8]
+
+
+#res = convert_1d_to_2d(lst, len_lst)
+#print(res)
+#print(type(res))
+
+
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
 
-    print('Napisz 6 cyfr')
+    len_lst = [8, 8, 8, 8, 8, 8, 8, 8]
+
+    #PIERWSZE ODEBRANIE PLANSZY
+    data = s.recv(1024)
+    rec_str = data.decode()
+    res = str_to_list(rec_str)
+    res = convert_1d_to_2d(res, len_lst)
+    print('RECEIVED')
+    for i in range(8):
+        print(res[i])
+    
+
+
+    #WYSLANIE NIBY RUCHU
+
+    print('Napisz 4 cyfry')
     string = input()
     #string = "Hello"
     #byt = bytes(string, 'utf-8')
@@ -32,13 +61,19 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     byt = bytes(string, 'utf-8')
 
     s.sendall(byt)
+
+    #DRUGIE ODEBRANIE PLANSZY
     data = s.recv(1024)
 
     rec_str = data.decode()
 
     res = str_to_list(rec_str)
+    res = convert_1d_to_2d(res, len_lst)
+    print('RECEIVED')
+    for i in range(8):
+        print(res[i])
 
-    print('RECEIVED', res)
+    
 #print('RECEIVED', data.decode())
 #print('RECEIVED', list(data))
 
@@ -51,19 +86,7 @@ one_d = list(chain.from_iterable(my_list))
 print(one_d)
 """
 
-#ZAMIANA 1D LIST NA 2D
-"""
-def convert_1d_to_2d(lst, len_lst):
-    it = iter(lst)
-    return [list(islice(it, i)) for i in len_lst]
 
-lst = [1,2,3,4,5,6,7,8]
-len_lst = [4, 4]
-
-res = convert_1d_to_2d(lst, len_lst)
-print(res)
-print(type(res))
-"""
 
 
 
