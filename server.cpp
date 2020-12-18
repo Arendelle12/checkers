@@ -13,8 +13,18 @@ using namespace std;
 #define MAX_NUM_OF_CLIENTS 100
 #define ROWS 8
 #define COLUMNS 8
+//ROZMIAR TABLICY DO PLANSZY
+#define SIZE 64
+#define MAX_NUM_OF_GAMES 50
 
-
+struct game
+{
+    char *board;
+    int turn;
+    //int player1;
+    //int player2;
+    int move[4];
+};
 
 struct client_info
 {
@@ -24,19 +34,120 @@ struct client_info
     int *second_player_fd;
     int *connected_clients;
     pthread_mutex_t *connection_mutex;
+    pthread_mutex_t *game_mutex;
     //TEMPORARY
-    //PLANSZA - DO STRUKTURY GAME
-    char *board;
+    //DO STRUKTURY GAME (?)
+    //char *board;
+    //int turn;
+    //char *move; //?
+    game *checkers;
 };
 
-struct game
+//LOGIKA GRY - DO PRZENIESIENIA DO INNEGO PLIKU
+//PSEUDOKOD
+int *mozliweRuchy(char plansza[], int pozycjaStartowa, int tura)
 {
-    int *board;
-    int turn;
-    int player1;
-    int player2;
-    int move[4];
-};
+    //ZWRACAMY MOZLIWE KONCOWE POZYCJE W TABLICY JAKO INT
+    int* buf = new int [2];
+    for(int i = 0; i < 2; i++)
+    {
+        buf[i] = -1;
+        //printf("%d\n", buf[i]);
+    }
+    /*
+    printf("DEBUG FUNKCJI\n");
+    printf("Pozycja startowa: %d\n", pozycjaStartowa);
+    printf("TURA: %d\n", tura);
+    printf("plansza[pozycja Startowa]: %c\n", plansza[pozycjaStartowa]);
+    */
+    
+    //najpierw musimy sprawdzic, czy klikniety pionek jest valid
+
+    //to po prostu sprawdzmy ruchy valid i zrobmy else xD
+
+    //sprawdzamy czy gracz kliknal swoj pionek
+    if(tura == 1)
+    {
+
+        //SPRAWDZANIE CZY PIONEK ZGADZA SIE Z GRACZEM MUSI BYC WCZESNIEJ
+        if(plansza[pozycjaStartowa] == '1')  
+        {
+            
+            //PRZESUNIECIE PIONKA BEZ BICIA
+            if((pozycjaStartowa % 16 != 8) && (plansza[pozycjaStartowa + 7] == '0'))
+            {
+                //RUCH POPRAWNY
+                buf[0] = pozycjaStartowa + 7;
+            }
+            if((pozycjaStartowa % 16 != 7) && (plansza[pozycjaStartowa + 9] == '0'))
+            {
+                //RUCH POPRAWNY
+                buf[1] = pozycjaStartowa + 9;
+            }
+            //BICIE
+            if((pozycjaStartowa % 16 != 1) && (pozycjaStartowa % 16 != 8))
+            {
+                if((plansza[pozycjaStartowa + 7] == '2') && (plansza[pozycjaStartowa + 14] == '0'))
+                {
+                    //JEST BICIE
+                    buf[0] = pozycjaStartowa + 14;
+                }
+            }
+            if((pozycjaStartowa % 16 != 7) && (pozycjaStartowa % 16 != 14))
+            {
+                if((plansza[pozycjaStartowa + 9] == '2') && (plansza[pozycjaStartowa + 18] == '0'))
+                {
+                    //JEST BICIE
+                    buf[1] = pozycjaStartowa + 18;
+                }
+            }        
+        }   
+    }
+    else if(tura == 2)
+    {
+        //SPRAWDZANIE CZY PIONEK ZGADZA SIE Z GRACZEM MUSI BYC WCZESNIEJ - W PROGRAMIE, TAK, ZEBY TYLKO ZWRACAC RUCHY DLA POPRAWNIE WYBRANEGO PIONKA
+        if(plansza[pozycjaStartowa] == '2')
+        {
+            //PRZESUNIECIE PIONKA BEZ BICIA
+            if((pozycjaStartowa % 16 != 8) && (plansza[pozycjaStartowa - 9] == '0'))
+            {
+                //RUCH POPRAWNY
+                buf[0] = pozycjaStartowa - 9;
+            }
+            if((pozycjaStartowa % 16 != 7) && (plansza[pozycjaStartowa - 7] == '0'))
+            {
+                //RUCH POPRAWNY
+                buf[1] = pozycjaStartowa - 7;
+            }
+            //BICIE
+            if((pozycjaStartowa % 16 != 1) && (pozycjaStartowa % 16 != 8))
+            {
+                if((plansza[pozycjaStartowa - 9] == '1') && (plansza[pozycjaStartowa - 18] == '0'))
+                {
+                    //JEST BICIE
+                    buf[0] = pozycjaStartowa - 18;
+                }
+            }
+            if((pozycjaStartowa % 16 != 7) && (pozycjaStartowa % 16 != 14))
+            {
+                if((plansza[pozycjaStartowa - 7] == '1') && (plansza[pozycjaStartowa - 14] == '0'))
+                {
+                    //JEST BICIE
+                    buf[1] = pozycjaStartowa - 14;
+                }
+            }
+        }    
+    }
+    printf("Wyznaczone ruchy w funkcji\n");
+    for(int i = 0; i < 2; i++)
+    {
+        printf("%d, ", buf[i]);
+    }
+    printf("\n\n");
+    return buf;
+}
+
+
 
 //ZAMIANA TABLICY CHAR NA TABLICE INT
 int *charArrayToInt(char array[])
@@ -62,13 +173,58 @@ char *intArrayToChar(int array[])
     }
     return buf;
 }
+/*
+//ZAMIANA TABLICY 2D NA 1D
+int temp1[n];
+for(int i = 0; i < n; i++)
+{
+    temp1[i] = temp[i/3][i%3];
+    //printf("Element na pozycji temp1[%d] wynosi %d\n", i, temp1[i]);
+}
 
 
+*/
+
+/*
+//ZAMIANA TABLICY 1D NA 2D
+int temp[2][3];
+for(int i = 0; i < 2; i++)
+{
+    for(int j = 0; j < 3; j++)
+    {
+        temp[i][j] = buf[i*3+j];
+        //printf("Element na pozycji temp[%d][%d] wynosi %d\n", i, j, temp[i][j]);
+    }
+}
+*/
+
+/*int changeTurn(int turn)
+{
+    if(turn == 1)
+    {
+        turn = 2;
+    }
+    else
+    {
+        turn = 1;    
+    }
+
+    return turn;
+    
+}*/
+
+int getPosition(char row, char col)
+{
+    int r = row - '0';
+    int c = col - '0';
+    int position = r * ROWS + c;
+    return position;
+}
 
 //TWORZENIE PLANSZY
-int *createBoard()
+char *createBoard()
 {
-    int* board = new int[ROWS * COLUMNS];
+    char* board = new char[ROWS * COLUMNS];
     for(int row = 0; row < ROWS; row++)
     {
         for(int col = 0; col < COLUMNS; col++)
@@ -77,19 +233,28 @@ int *createBoard()
             {
                 if((row%2 == 0 && col%2 == 1) || (row%2 == 1 && col%2 == 0))
                 {
-                    board[row * ROWS + col] = 1;
+                    board[row * ROWS + col] = '1';
                 }
+                else
+                {
+                    board[row * ROWS + col] = '0';
+                }
+                
             }
             else if(row > 4)
             {
                 if((row%2 == 1 && col%2 == 0) || (row%2 == 0 && col%2 == 1))
                 {
-                    board[row * ROWS + col] = 2;
+                    board[row * ROWS + col] = '2';
+                }
+                else
+                {
+                    board[row * ROWS + col] = '0';
                 }
             }
             else
             {
-                board[row * ROWS + col] = 0;
+                board[row * ROWS + col] = '0';
             }
             
         }
@@ -114,13 +279,115 @@ void *ThreadBehavior(void *client)
     int my_id = (*t_client).id;
     printf("My id: %d\n", my_id);
 
+    //TWORZENIE PLANSZY W STRUKTURZE GAME - DLA PIERWSZEGO GRACZA Z PARY
+    //ORAZ NADANIE TURY
+    if((*t_client).id %2 == 0)
+    {
+        (*t_client).checkers->board = createBoard();
+        (*t_client).checkers->turn = 1;
+    }
+
+    //TWORZENIE PLANSZY W WATKU KLIENTA
+    //(*t_client).board = createBoard();
+
+    printf("WATEK - CO ZAWIERA TABLICA KLIENTA\n%s\n", (*t_client).checkers->board);
+
+    //if()
+
+    //WYSLANIE PLANSZY DO KLIENTA
+    write((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
+
+    //ZACZYNA KLIENT O PARZYSTYM ID
+    //(*t_client).turn = 0;
+    
+    
+    //ODBIERAMY RUCH A WYSYLAMY PLANSZE
     char tab[BUF_SIZE];
 
     //odbieramy napis od klienta o parzystym id
     //zamieniamy napis na tablice
     //zamieniamy tablice na napis
     //wysylamy napis do klienta o nieparzystym id
-    int n = read((*t_client).client_socket_descriptor, tab, sizeof(tab)-1);
+    int readc = 0;
+    int start_position;
+    int end_position;
+    char pionek;
+    char pole;
+
+    //CZEKAMY NA WEJSCIE DRUGIEGO GRACZA - DO ZMIANY xd
+    /*while(*(*t_client).second_player_fd == -1)
+    {
+        sleep(1);
+    }
+*/
+   // while(*(*t_client).second_player_fd != -1)
+   while(1)
+    {    
+        //if((*t_client).id%2 == (*t_client).turn)
+        //{
+            //ODCZYTUJEMY RUCH
+            readc = read((*t_client).client_socket_descriptor, tab, sizeof(tab)-1);
+            if(readc <= 0)
+            {
+                pthread_mutex_lock((*t_client).connection_mutex);
+                *(*t_client).position_in_clients_array = -1;
+                (*t_client).connected_clients--;
+                (*t_client).checkers->turn = 1;
+                close((*t_client).client_socket_descriptor);
+                free(t_client);
+                pthread_mutex_unlock((*t_client).connection_mutex);
+                pthread_exit(NULL);
+            }
+            tab[readc] = 0;
+            printf("ODEBRANA WIADOMOSC: %s\n", tab);
+
+            //ZAKLADAMY, ZE WYSYLA WIADOMOSC 'ROW1COL1ROW2COL2', TAB[0] = ROW1 I TAB[1] = COL1, TAB[2] = ROW2, TAB[3] = COL2
+            start_position = getPosition(tab[0], tab[1]);
+            end_position = getPosition(tab[2], tab[3]);
+
+            int *ruchy = mozliweRuchy((*t_client).checkers->board, start_position, (*t_client).checkers->turn);
+            printf("ID GRACZA: %d;;; Wyznaczone mozliwe pola koncowe\n", (*t_client).id);
+            for(int i = 0; i < 2; i++)
+            {
+                printf("%d, ", ruchy[i]);
+            }
+            printf("\n");
+
+            pionek = (*t_client).checkers->board[start_position];
+            pole = (*t_client).checkers->board[end_position];
+            if(pionek == '0')
+            {
+                printf("Nie mozna wybrac pola startowego\n");
+            }            
+            else if(pole != '0')
+            {
+                 printf("Nie mozna wybrac pola koncowego\n");
+            }
+            else
+            {
+                (*t_client).checkers->board[end_position] = pionek;
+                (*t_client).checkers->board[start_position] = '0';
+            }
+            
+            
+
+            //SPRAWDZENIE RUCHU I ZMIANA NA PLANSZY
+
+            //printf("\nZMIENIAMY JEDNO POLE PLANSZY\n");
+
+            //(*t_client).board[5] = '6';
+
+            //printf("TABLICA KLIENTA PO ZMIANIE\n%s\n", (*t_client).board);
+
+
+
+            //WYSYLAMY TABLICE DO OBU KLIENTOW
+            write((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
+            //write(*(*t_client).second_player_fd, (*t_client).board, SIZE);
+            
+
+        //}
+    //read = read((*t_client).client_socket_descriptor, tab, sizeof(tab)-1);
     /*if (n == -1){
         printf("Read error occures\n");
         close((*t_client).client_socket_descriptor);
@@ -131,72 +398,13 @@ void *ThreadBehavior(void *client)
         close((*t_client).client_socket_descriptor);
         free(t_client);
     }*/
-    if(n <= 0)
-    {
-        pthread_mutex_lock((*t_client).connection_mutex);
-        *(*t_client).position_in_clients_array = -1;
-        (*t_client).connected_clients--;
-        close((*t_client).client_socket_descriptor);
-        free(t_client);
-        pthread_mutex_unlock((*t_client).connection_mutex);
-        pthread_exit(NULL);
-    }
-    tab[n] = 0;
-    printf("%s\n", tab);
-    /*for (int i = 0; i < n; i++)
-    {
-        printf("%c\n", tab[i]);
-    }*/
+
+
     
 
-    /*
-    //ZAMIANA TABLICY 1D NA 2D
-    int temp[2][3];
-    for(int i = 0; i < 2; i++)
-    {
-        for(int j = 0; j < 3; j++)
-        {
-            temp[i][j] = buf[i*3+j];
-            //printf("Element na pozycji temp[%d][%d] wynosi %d\n", i, j, temp[i][j]);
-        }
+
+
     }
-    */
-    /*
-    //ZAMIANA TABLICY 2D NA 1D
-    int temp1[n];
-    for(int i = 0; i < n; i++)
-    {
-        temp1[i] = temp[i/3][i%3];
-        //printf("Element na pozycji temp1[%d] wynosi %d\n", i, temp1[i]);
-    }
-
-
-    */
-
-    //char buf[BUF_SIZE]; 
-    //n = sprintf(buf, "%s", "Hello client");
-    //printf("%d\n", n);
-
-    //TEMPORARY
-    //TABLICA JAKO PLANSZA - DODAC DO STRUKTURY GAME
-    char* buf;
-    buf = (*t_client).board;
-    //TEMPORARY
-    cout<<"THREAD BOARD"<<endl;
-    printf("%s\n", buf);
-    
-    //printf("%s\n", (*t_client).board);
-
-    while(*(*t_client).second_player_fd == -1){
-        sleep(1);
-    }
-    //ROZMIAR TABLICY BUF - DO ZMIANY?
-    int size = ROWS * COLUMNS;
-    //write(*(*t_client).second_player_fd, buf, n);
-    write(*(*t_client).second_player_fd, buf, size);
-    
-    //write(*(*t_client).second_player_fd, tab, n);
-
     sleep(5);
 
     pthread_exit(NULL);
@@ -233,69 +441,27 @@ int main(){
     int connected_clients = 0;
     int client_id;
     int player_two_id;
+    int game_id;
 
     pthread_mutex_t connection_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+    //TABLICA STRUKTUR
+    game games[MAX_NUM_OF_GAMES];
+    //TABLICA MUTEXOW (DO TURN)
+    pthread_mutex_t game_mutex[MAX_NUM_OF_GAMES];
 
     //inicjalizacja tablicy clients wartoscia -1
     for(int i = 0; i < MAX_NUM_OF_CLIENTS; i++)
     {
         clients[i] = -1;
     }
-    //Wypisywanie tablic - DO USUNIECIA
-    cout<<"BOARD"<<endl;
-    int* board = createBoard();
-    for(int i = 0; i < ROWS; i++)
+
+    //inicjalizacja tablicy mutexow
+    for(int i = 0 ; i < MAX_NUM_OF_GAMES; i++)
     {
-        for(int j = 0; j < COLUMNS; j++)
-        {
-            //printf("%d, ", board[i * ROWS + j]);
-            cout<<board[i * ROWS + j]<<" ";
-        }
-        printf("\n");
+        game_mutex[i] = PTHREAD_MUTEX_INITIALIZER;
     }
 
-    char* boardc = intArrayToChar(board);
-/*
-    int* board2 = createBoard();
-    for(int i = 0; i < ROWS; i++)
-    {
-        for(int j = 0; j < COLUMNS; j++)
-        {
-            board2[i * ROWS + j] += 1;
-            //printf("%d, ", board2[i * ROWS + j]);
-            cout<<board2[i * ROWS + j]<<" ";
-        }
-        printf("\n");
-    }
-*/
-    cout<<"BOARD C"<<endl;
-    for(int i = 0; i < ROWS; i++)
-    {
-        for(int j = 0; j < COLUMNS; j++)
-        {
-            //printf("%c, ", boardc[i * ROWS + j]);
-            cout<<boardc[i * ROWS + j]<<" ";
-        }
-        printf("\n");
-    }
-/*
-    char* boardc2 = intArrayToChar(board2);
-    for(int i = 0; i < ROWS; i++)
-    {
-        for(int j = 0; j < COLUMNS; j++)
-        {
-            //printf("%c, ", boardc2[i * ROWS + j]);
-            cout<<boardc2[i * ROWS + j]<<" ";
-        }
-        printf("\n");
-    }*/
-    cout<<"board is of type: "<<typeid(*board).name()<<endl;
-    cout<<"boardc is of type: "<<typeid(*boardc).name()<<endl;
-    //cout<<"board2 is of type: "<<typeid(*board2).name()<<endl;
-    //cout<<"boardc2 is of type: "<<typeid(*boardc2).name()<<endl;
-
-    
-    //free(board2);
 
 
 
@@ -361,6 +527,7 @@ int main(){
                     clients[i] = connection_socket_descriptor;
                     client_id = i;
                     connected_clients++;
+                    game_id = client_id/2;
                     //printf("Liczba polaczonych klientow: %d, id klienta: %d\n", connected_clients, client_id);
                     break;
                 }
@@ -392,12 +559,14 @@ int main(){
         (*client).second_player_fd = &clients[player_two_id];
         (*client).connected_clients = &connected_clients;
         (*client).connection_mutex = &connection_mutex;
+        (*client).checkers = &games[game_id];
+        (*client).game_mutex = &game_mutex[game_id];
         //TEMPORARY
         //Przypisanie tablicy do struktury klienta - DO ZMIANY NA STRUKTURE GRY
-        (*client).board = boardc;
+        //(*client).board = boardc;
 
         //Wypisywanie tablic - DO USUNIECIA
-        cout<<"BOARD C MAIN"<<endl;
+        /*cout<<"BOARD C MAIN"<<endl;
 
         for(int i = 0; i < ROWS; i++)
         {
@@ -410,16 +579,16 @@ int main(){
 
         cout<<"CLIENT BOARD MAIN"<<endl;
 
-        /*for(int i = 0; i < ROWS; i++)
+        for(int i = 0; i < ROWS; i++)
         {
             for(int j = 0; j < COLUMNS; j++)
             {
                 cout<<(*client).board[i * ROWS + j]<<" ";
             }
             cout<<endl;
-        }*/
+        }
         //cout<<(*client).board<<endl;
-        printf("%s\n", (*client).board);
+        printf("%s\n", (*client).board);*/
         
         handleConnection(client);
         
@@ -432,8 +601,77 @@ int main(){
     close(server_socket_descriptor);
 
     //ZWALNIANIE PAMIECI PO TABLICACH - DO ZMIANY
-    free(board);
-    free(boardc);
+    //free(board);
+    //free(boardc);
 
     return 0;
 }
+
+    /*cout<<"BOARD"<<endl;
+    char* board = createBoard();
+    for(int i = 0; i < ROWS; i++)
+    {
+        for(int j = 0; j < COLUMNS; j++)
+        {
+            //printf("%d, ", board[i * ROWS + j]);
+            cout<<board[i * ROWS + j]<<" ";
+        }
+        printf("\n");
+    }*/
+
+
+    //Wypisywanie tablic - DO USUNIECIA
+    /*cout<<"BOARD"<<endl;
+    int* board = createBoard();
+    for(int i = 0; i < ROWS; i++)
+    {
+        for(int j = 0; j < COLUMNS; j++)
+        {
+            //printf("%d, ", board[i * ROWS + j]);
+            cout<<board[i * ROWS + j]<<" ";
+        }
+        printf("\n");
+    }
+
+    char* boardc = intArrayToChar(board);
+
+    int* board2 = createBoard();
+    for(int i = 0; i < ROWS; i++)
+    {
+        for(int j = 0; j < COLUMNS; j++)
+        {
+            board2[i * ROWS + j] += 1;
+            //printf("%d, ", board2[i * ROWS + j]);
+            cout<<board2[i * ROWS + j]<<" ";
+        }
+        printf("\n");
+    }
+
+    cout<<"BOARD C"<<endl;
+    for(int i = 0; i < ROWS; i++)
+    {
+        for(int j = 0; j < COLUMNS; j++)
+        {
+            //printf("%c, ", boardc[i * ROWS + j]);
+            cout<<boardc[i * ROWS + j]<<" ";
+        }
+        printf("\n");
+    }
+
+    char* boardc2 = intArrayToChar(board2);
+    for(int i = 0; i < ROWS; i++)
+    {
+        for(int j = 0; j < COLUMNS; j++)
+        {
+            //printf("%c, ", boardc2[i * ROWS + j]);
+            cout<<boardc2[i * ROWS + j]<<" ";
+        }
+        printf("\n");
+    }*/
+    //cout<<"board is of type: "<<typeid(*board).name()<<endl;
+    //cout<<"boardc is of type: "<<typeid(*boardc).name()<<endl;
+    //cout<<"board2 is of type: "<<typeid(*board2).name()<<endl;
+    //cout<<"boardc2 is of type: "<<typeid(*boardc2).name()<<endl;
+
+    
+    //free(board2);
