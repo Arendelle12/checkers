@@ -272,6 +272,8 @@ void *ThreadBehavior(void *client)
     printf("My id: %d\n", my_id);
 
     char yourTurn[10] = "Twoj ruch";
+
+    //(*t_client).checkers->turn = 0;
 /*
 int number_to_send = 10000; // Put your value
 int converted_number = htonl(number_to_send);
@@ -286,14 +288,21 @@ write(client_socket, &converted_number, sizeof(converted_number));*/
     //ORAZ NADANIE TURY
     if(player == 0)
     {
+        //(*t_client).checkers = (game *)malloc(sizeof(struct game));
         (*t_client).checkers->board = createBoard();
+        //printf("\nUtworzono plansze\n");
+        //printf("\nTURA: %d\n", *((*t_client).checkers->turn));
+        
         (*t_client).checkers->turn = 0;
+        //printf("\nNadano ture\n");
         write((*t_client).client_socket_descriptor, "1", 1);
     }
     else
     {
         write((*t_client).client_socket_descriptor, "2", 1);
     }
+
+    printf("\nTURA: %d\n", (*t_client).checkers->turn);
 
     printf("WATEK - CO ZAWIERA TABLICA KLIENTA\n%s\n", (*t_client).checkers->board);
     //wyslanie numeru gracza
@@ -316,33 +325,43 @@ write(client_socket, &converted_number, sizeof(converted_number));*/
     //char selected_end;
     int valid_move = 0;
 
+    //printf("Przed oczytaniem wartosci tura\n");
+
+    //int *temp_tura = (*t_client).checkers->turn;
+
+    //printf("Po odczytaniu wartosci tura\n");
+
     //CZEKAMY NA WEJSCIE DRUGIEGO GRACZA - DO ZMIANY xd
     /*while(*(*t_client).second_player_fd == -1)
     {
         sleep(1);
     }
 */
+    bool print_turn = false;
+   // printf("Przed while true\n");
     while(1)
     {    
+        //printf("Wszedlem w while true\n");
         //JESLI GRACZ MA RUCH
-        if((*t_client).checkers->turn == (*t_client).id%2)
+        if((*t_client).checkers->turn == player)
         {  
+            //printf("Wszedlem w if temp_tura = player\n");
             //DOPOKI RUCH NIE JEST PRAWIDLOWY
             while(valid_move == 0)
             {
                 //ODCZYTUJEMY RUCH
                 readc = read((*t_client).client_socket_descriptor, tab, sizeof(tab)-1);
-                if(readc <= 0)
+                /*if(readc <= 0)
                 {
                     pthread_mutex_lock((*t_client).connection_mutex);
                     *(*t_client).position_in_clients_array = -1;
                     (*t_client).connected_clients--;
-                    (*t_client).checkers->turn = 1;
+                    *(*t_client).checkers->turn = 0;
                     close((*t_client).client_socket_descriptor);
                     free(t_client);
                     pthread_mutex_unlock((*t_client).connection_mutex);
                     pthread_exit(NULL);
-                }
+                }*/
                 tab[readc] = 0;
                 printf("ODEBRANA WIADOMOSC: %s\n", tab);
 
@@ -411,10 +430,23 @@ write(client_socket, &converted_number, sizeof(converted_number));*/
             //wysylamy plansze do obu klientow
             write((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
             write(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
+            if((valid_move == 1) & (print_turn == false)){
+                printf("\nTURA PRZED ZMIANA W GRACZU %d: %d\n", (*t_client).id, (*t_client).checkers->turn);
+            }
             //zmieniamy ture
+            pthread_mutex_lock((*t_client).game_mutex);
             (*t_client).checkers->turn = changeTurn((*t_client).checkers->turn);
+            pthread_mutex_unlock((*t_client).game_mutex);
+
+            //sprawdzenie, czy tura sie zmienia 
+            if((valid_move == 1) & (print_turn == false)){
+                printf("\nTURA PO ZMIANIE W GRACZU %d: %d\n", (*t_client).id, (*t_client).checkers->turn);
+            }
+            print_turn = true;
             //wysylamy do przeciwnika wiadomosc TWOJ RUCH
             write(*(*t_client).second_player_fd, yourTurn, 10);
+
+            valid_move = 0;
 
             
 
@@ -434,7 +466,7 @@ write(client_socket, &converted_number, sizeof(converted_number));*/
 
         }
 
-
+        print_turn = false;
 
     }
     sleep(5);
@@ -480,7 +512,7 @@ int main(){
     //TABLICA STRUKTUR
     game games[MAX_NUM_OF_GAMES];
     //TABLICA MUTEXOW (DO TURN)
-    //pthread_mutex_t game_mutex[MAX_NUM_OF_GAMES];
+    pthread_mutex_t game_mutex[MAX_NUM_OF_GAMES];
 
     //inicjalizacja tablicy clients wartoscia -1
     for(int i = 0; i < MAX_NUM_OF_CLIENTS; i++)
@@ -489,12 +521,12 @@ int main(){
     }
 
     //inicjalizacja tablicy mutexow
-    /*
+    
     for(int i = 0 ; i < MAX_NUM_OF_GAMES; i++)
     {
         game_mutex[i] = PTHREAD_MUTEX_INITIALIZER;
     }
-    */
+    
 
 
 
@@ -537,6 +569,8 @@ int main(){
         printf("Listen failed\n");
         exit(1);
     }
+
+    printf("Waiting for clients\n");
 
     while (1)
     {
@@ -598,9 +632,10 @@ int main(){
         (*client).connected_clients = &connected_clients;
         (*client).connection_mutex = &connection_mutex;
         (*client).checkers = &games[game_id];
-        
+        (*client).game_mutex = &game_mutex[game_id];
+
         pthread_mutex_unlock(&connection_mutex);
-        //(*client).game_mutex = &game_mutex[game_id];
+       
         //TEMPORARY
         //Przypisanie tablicy do struktury klienta - DO ZMIANY NA STRUKTURE GRY
         //(*client).board = boardc;
