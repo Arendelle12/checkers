@@ -5,6 +5,10 @@ from itertools import chain, islice
 HOST = "127.0.0.1"
 PORT = 1234
 
+len_lst = [8, 8, 8, 8, 8, 8, 8, 8]
+
+my_turn = False
+
 #ZAMIANA STRINGA POSTACI 1234 NA LISTE
 def str_to_list(test_str):
 #test_str = "1234"
@@ -34,11 +38,65 @@ def convert_1d_to_2d(lst, len_lst):
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
 
-    len_lst = [8, 8, 8, 8, 8, 8, 8, 8]
+    #while(True):
+        #odebranie informacji 
+    player = s.recv(1)
+    player_number = player.decode('utf-8')
+    print(player_number)
 
-    #PIERWSZE ODEBRANIE PLANSZY
-    data = s.recv(1024)
-    rec_str = data.decode()
+    board = s.recv(64)   
+    rec_board = board.decode('utf-8')
+    print("Otrzymana plansza")
+    print(rec_board)
+
+    if(player_number == "1"):
+        print("Wszedlem w if numer gracza")
+        #niby wyslanie ruchu
+        print('Napisz 4 cyfry - ruch')
+        string = input()
+        #zamiana string na bytes
+        byt = bytes(string, 'utf-8')
+        s.sendall(byt)
+
+        #board = s.recv(64)
+        #rec_board = board.decode('utf-8')
+        #print("Otrzymana plansza po ruchu")
+        #print(rec_board)
+
+#nie odbieram ponownie planszy
+
+    while(1):
+        data = s.recv(64)
+        rec_str = data.decode('utf-8')
+
+
+        if(rec_str == "Twoj ruch\x00"):
+            my_turn = True
+            print("TRUE: ", rec_str)
+
+        else:
+            print("Otrzymano wiadomosc: ", rec_str)
+
+        if(my_turn == True):
+
+            #niby wyslanie ruchu
+            print('Napisz 4 cyfry - ruch')
+            string = input()
+            #zamiana string na bytes
+            byt = bytes(string, 'utf-8')
+            s.sendall(byt)
+            my_turn = False
+        
+
+
+    #else:
+    #    print("Ruch przeciwnika")
+
+
+#PIERWSZE ODEBRANIE PLANSZY
+        
+
+    """
     res = str_to_list(rec_str)
     res = convert_1d_to_2d(res, len_lst)
     print('RECEIVED')
@@ -49,8 +107,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
     #WYSLANIE NIBY RUCHU
 
-    print('Napisz 4 cyfry')
-    string = input()
+    
     #string = "Hello"
     #byt = bytes(string, 'utf-8')
 
@@ -58,9 +115,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
 
 
-    byt = bytes(string, 'utf-8')
-
-    s.sendall(byt)
+   
 
     #DRUGIE ODEBRANIE PLANSZY
     data = s.recv(1024)
@@ -72,6 +127,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     print('RECEIVED')
     for i in range(8):
         print(res[i])
+        """
 
     
 #print('RECEIVED', data.decode())

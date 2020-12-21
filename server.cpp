@@ -61,89 +61,81 @@ int *mozliweRuchy(char plansza[], int pozycjaStartowa, int tura)
     printf("plansza[pozycja Startowa]: %c\n", plansza[pozycjaStartowa]);
     */
     
-    //najpierw musimy sprawdzic, czy klikniety pionek jest valid
+    //najpierw musimy sprawdzic, czy klikniety selected_start jest valid
 
     //to po prostu sprawdzmy ruchy valid i zrobmy else xD
 
-    //sprawdzamy czy gracz kliknal swoj pionek
-    if(tura == 1)
-    {
-
-        //SPRAWDZANIE CZY PIONEK ZGADZA SIE Z GRACZEM MUSI BYC WCZESNIEJ
-        if(plansza[pozycjaStartowa] == '1')  
+    //sprawdzamy czy gracz kliknal swoj selected_start
+    if(tura == 0)
+    {            
+        //PRZESUNIECIE PIONKA BEZ BICIA
+        if((pozycjaStartowa % 16 != 8) && (plansza[pozycjaStartowa + 7] == '0'))
         {
-            
-            //PRZESUNIECIE PIONKA BEZ BICIA
-            if((pozycjaStartowa % 16 != 8) && (plansza[pozycjaStartowa + 7] == '0'))
-            {
-                //RUCH POPRAWNY
-                buf[0] = pozycjaStartowa + 7;
-            }
-            if((pozycjaStartowa % 16 != 7) && (plansza[pozycjaStartowa + 9] == '0'))
-            {
-                //RUCH POPRAWNY
-                buf[1] = pozycjaStartowa + 9;
-            }
-            //BICIE
-            if((pozycjaStartowa % 16 != 1) && (pozycjaStartowa % 16 != 8))
-            {
-                if((plansza[pozycjaStartowa + 7] == '2') && (plansza[pozycjaStartowa + 14] == '0'))
-                {
-                    //JEST BICIE
-                    buf[0] = pozycjaStartowa + 14;
-                }
-            }
-            if((pozycjaStartowa % 16 != 7) && (pozycjaStartowa % 16 != 14))
-            {
-                if((plansza[pozycjaStartowa + 9] == '2') && (plansza[pozycjaStartowa + 18] == '0'))
-                {
-                    //JEST BICIE
-                    buf[1] = pozycjaStartowa + 18;
-                }
-            }        
-        }   
-    }
-    else if(tura == 2)
-    {
-        //SPRAWDZANIE CZY PIONEK ZGADZA SIE Z GRACZEM MUSI BYC WCZESNIEJ - W PROGRAMIE, TAK, ZEBY TYLKO ZWRACAC RUCHY DLA POPRAWNIE WYBRANEGO PIONKA
-        if(plansza[pozycjaStartowa] == '2')
+            //RUCH POPRAWNY
+            buf[0] = pozycjaStartowa + 7;
+        }
+        if((pozycjaStartowa % 16 != 7) && (plansza[pozycjaStartowa + 9] == '0'))
         {
-            //PRZESUNIECIE PIONKA BEZ BICIA
-            if((pozycjaStartowa % 16 != 8) && (plansza[pozycjaStartowa - 9] == '0'))
+            //RUCH POPRAWNY
+            buf[1] = pozycjaStartowa + 9;
+        }
+        //BICIE
+        if((pozycjaStartowa % 16 != 1) && (pozycjaStartowa % 16 != 8))
+        {
+            if((plansza[pozycjaStartowa + 7] == '2') && (plansza[pozycjaStartowa + 14] == '0'))
             {
-                //RUCH POPRAWNY
-                buf[0] = pozycjaStartowa - 9;
+                //JEST BICIE
+                buf[0] = pozycjaStartowa + 14;
             }
-            if((pozycjaStartowa % 16 != 7) && (plansza[pozycjaStartowa - 7] == '0'))
+        }
+        if((pozycjaStartowa % 16 != 7) && (pozycjaStartowa % 16 != 14))
+        {
+            if((plansza[pozycjaStartowa + 9] == '2') && (plansza[pozycjaStartowa + 18] == '0'))
             {
-                //RUCH POPRAWNY
-                buf[1] = pozycjaStartowa - 7;
-            }
-            //BICIE
-            if((pozycjaStartowa % 16 != 1) && (pozycjaStartowa % 16 != 8))
-            {
-                if((plansza[pozycjaStartowa - 9] == '1') && (plansza[pozycjaStartowa - 18] == '0'))
-                {
-                    //JEST BICIE
-                    buf[0] = pozycjaStartowa - 18;
-                }
-            }
-            if((pozycjaStartowa % 16 != 7) && (pozycjaStartowa % 16 != 14))
-            {
-                if((plansza[pozycjaStartowa - 7] == '1') && (plansza[pozycjaStartowa - 14] == '0'))
-                {
-                    //JEST BICIE
-                    buf[1] = pozycjaStartowa - 14;
-                }
+                //JEST BICIE
+                buf[1] = pozycjaStartowa + 18;
             }
         }    
     }
+    else if(tura == 1)
+    {
+        //PRZESUNIECIE PIONKA BEZ BICIA
+        if((pozycjaStartowa % 16 != 8) && (plansza[pozycjaStartowa - 9] == '0'))
+        {
+            //RUCH POPRAWNY
+            buf[0] = pozycjaStartowa - 9;
+        }
+        if((pozycjaStartowa % 16 != 7) && (plansza[pozycjaStartowa - 7] == '0'))
+        {
+            //RUCH POPRAWNY
+            buf[1] = pozycjaStartowa - 7;
+        }
+        //BICIE
+        if((pozycjaStartowa % 16 != 1) && (pozycjaStartowa % 16 != 8))
+        {
+            if((plansza[pozycjaStartowa - 9] == '1') && (plansza[pozycjaStartowa - 18] == '0'))
+            {
+                //JEST BICIE
+                buf[0] = pozycjaStartowa - 18;
+            }
+        }
+        if((pozycjaStartowa % 16 != 7) && (pozycjaStartowa % 16 != 14))
+        {
+            if((plansza[pozycjaStartowa - 7] == '1') && (plansza[pozycjaStartowa - 14] == '0'))
+            {
+                //JEST BICIE
+                buf[1] = pozycjaStartowa - 14;
+            }
+        }  
+    }
+    /*
     printf("Wyznaczone ruchy w funkcji\n");
     for(int i = 0; i < 2; i++)
     {
         printf("%d, ", buf[i]);
     }
     printf("\n\n");
+    */
     return buf;
 }
 
@@ -198,20 +190,20 @@ for(int i = 0; i < 2; i++)
 }
 */
 
-/*int changeTurn(int turn)
+int changeTurn(int turn)
 {
-    if(turn == 1)
+    if(turn == 0)
     {
-        turn = 2;
+        turn = 1;
     }
     else
     {
-        turn = 1;    
+        turn = 0;    
     }
 
     return turn;
     
-}*/
+}
 
 int getPosition(char row, char col)
 {
@@ -279,27 +271,45 @@ void *ThreadBehavior(void *client)
     int my_id = (*t_client).id;
     printf("My id: %d\n", my_id);
 
+    char yourTurn[10] = "Twoj ruch";
+
+    //(*t_client).checkers->turn = 0;
+/*
+int number_to_send = 10000; // Put your value
+int converted_number = htonl(number_to_send);
+
+// Write the number to the opened socket
+write(client_socket, &converted_number, sizeof(converted_number));*/
+
+    int player = (*t_client).id %2;
+    //int converted_player = htonl(player);
+
     //TWORZENIE PLANSZY W STRUKTURZE GAME - DLA PIERWSZEGO GRACZA Z PARY
     //ORAZ NADANIE TURY
-    if((*t_client).id %2 == 0)
+    if(player == 0)
     {
+        //(*t_client).checkers = (game *)malloc(sizeof(struct game));
         (*t_client).checkers->board = createBoard();
-        (*t_client).checkers->turn = 1;
+        //printf("\nUtworzono plansze\n");
+        //printf("\nTURA: %d\n", *((*t_client).checkers->turn));
+        
+        (*t_client).checkers->turn = 0;
+        //printf("\nNadano ture\n");
+        write((*t_client).client_socket_descriptor, "1", 1);
+    }
+    else
+    {
+        write((*t_client).client_socket_descriptor, "2", 1);
     }
 
-    //TWORZENIE PLANSZY W WATKU KLIENTA
-    //(*t_client).board = createBoard();
+    printf("\nTURA: %d\n", (*t_client).checkers->turn);
 
     printf("WATEK - CO ZAWIERA TABLICA KLIENTA\n%s\n", (*t_client).checkers->board);
-
-    //if()
-
+    //wyslanie numeru gracza
+    //write((*t_client).client_socket_descriptor, &converted_player, sizeof(converted_player)); 
+    
     //WYSLANIE PLANSZY DO KLIENTA
     write((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
-
-    //ZACZYNA KLIENT O PARZYSTYM ID
-    //(*t_client).turn = 0;
-    
     
     //ODBIERAMY RUCH A WYSYLAMY PLANSZE
     char tab[BUF_SIZE];
@@ -311,8 +321,15 @@ void *ThreadBehavior(void *client)
     int readc = 0;
     int start_position;
     int end_position;
-    char pionek;
-    char pole;
+    //char selected_start;
+    //char selected_end;
+    int valid_move = 0;
+
+    //printf("Przed oczytaniem wartosci tura\n");
+
+    //int *temp_tura = (*t_client).checkers->turn;
+
+    //printf("Po odczytaniu wartosci tura\n");
 
     //CZEKAMY NA WEJSCIE DRUGIEGO GRACZA - DO ZMIANY xd
     /*while(*(*t_client).second_player_fd == -1)
@@ -320,89 +337,136 @@ void *ThreadBehavior(void *client)
         sleep(1);
     }
 */
-   // while(*(*t_client).second_player_fd != -1)
-   while(1)
+    bool print_turn = false;
+   // printf("Przed while true\n");
+    while(1)
     {    
-        //if((*t_client).id%2 == (*t_client).turn)
-        //{
-            //ODCZYTUJEMY RUCH
-            readc = read((*t_client).client_socket_descriptor, tab, sizeof(tab)-1);
-            if(readc <= 0)
+        //printf("Wszedlem w while true\n");
+        //JESLI GRACZ MA RUCH
+        if((*t_client).checkers->turn == player)
+        {  
+            //printf("Wszedlem w if temp_tura = player\n");
+            //DOPOKI RUCH NIE JEST PRAWIDLOWY
+            while(valid_move == 0)
             {
-                pthread_mutex_lock((*t_client).connection_mutex);
-                *(*t_client).position_in_clients_array = -1;
-                (*t_client).connected_clients--;
-                (*t_client).checkers->turn = 1;
+                //ODCZYTUJEMY RUCH
+                readc = read((*t_client).client_socket_descriptor, tab, sizeof(tab)-1);
+                /*if(readc <= 0)
+                {
+                    pthread_mutex_lock((*t_client).connection_mutex);
+                    *(*t_client).position_in_clients_array = -1;
+                    (*t_client).connected_clients--;
+                    *(*t_client).checkers->turn = 0;
+                    close((*t_client).client_socket_descriptor);
+                    free(t_client);
+                    pthread_mutex_unlock((*t_client).connection_mutex);
+                    pthread_exit(NULL);
+                }*/
+                tab[readc] = 0;
+                printf("ODEBRANA WIADOMOSC: %s\n", tab);
+
+                //ZAKLADAMY, ZE WYSYLA WIADOMOSC 'ROW1COL1ROW2COL2', TAB[0] = ROW1 I TAB[1] = COL1, TAB[2] = ROW2, TAB[3] = COL2
+                start_position = getPosition(tab[0], tab[1]);
+                end_position = getPosition(tab[2], tab[3]);
+
+                //sprawdzenie, czy gracz nacisnal wlasciwy pionek
+
+                if( ((*t_client).checkers->turn == 0) && ((*t_client).checkers->board[start_position] == '1') )
+                {
+                    valid_move = 1;
+                }
+                else if( ((*t_client).checkers->turn == 1) && ((*t_client).checkers->board[start_position] == '2') )
+                {
+                    valid_move = 1;
+                }
+                else
+                {
+                    write((*t_client).client_socket_descriptor, yourTurn, 10);
+                    //WRACAMY DO POCZATKU PETLI - ZEBY ODCZYTAC WIADOMOSC
+                    continue;
+                }
+                
+                //WYZNACZANIE MOZLIWYCH RUCHOW DLA WYBRANEJ POZYCJI STARTOWEJ
+                int *ruchy = mozliweRuchy((*t_client).checkers->board, start_position, (*t_client).checkers->turn);
+                printf("ID GRACZA: %d;;; Wyznaczone mozliwe pola koncowe\n", (*t_client).id);
+                for(int i = 0; i < 2; i++)
+                {
+                    printf("%d, ", ruchy[i]);
+                }
+                printf("\n");
+
+                //PRZYPISUJEMY 0, ZEBY TERAZ SPRAWDZIC CZY POZYCJA KONCOWA JEST PRAWIDLOWA
+                valid_move = 0;
+
+                //SPRAWDZENIE, CZY POZYCJA END_POSITION POKRYWA SIE Z KTORAS Z WYZNACZONYCH
+                for(int i = 0; i < 2; i++)
+                {
+                    if(end_position == ruchy[i])
+                    {
+                        //POZYCJA KONCOWA PRAWIDLOWA
+                        valid_move = 1;
+                        break;
+                    }
+                }
+
+                if(valid_move == 0)
+                {
+                    write((*t_client).client_socket_descriptor, yourTurn, 10);
+                    //WRACAMY DO POCZATKU PETLI - ZEBY ODCZYTAC WIADOMOSC
+                    continue;
+                } 
+
+            }
+
+            //zakladamy, ze ruch jest juz prawidlowy
+            //selected_start = (*t_client).checkers->board[start_position];
+            //selected_end = (*t_client).checkers->board[end_position];
+
+            //przestawiamy pionek ze start_position na end_position
+            (*t_client).checkers->board[end_position] = (*t_client).checkers->board[start_position];
+            (*t_client).checkers->board[start_position] = '0';
+
+
+            //wysylamy plansze do obu klientow
+            write((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
+            write(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
+            if((valid_move == 1) & (print_turn == false)){
+                printf("\nTURA PRZED ZMIANA W GRACZU %d: %d\n", (*t_client).id, (*t_client).checkers->turn);
+            }
+            //zmieniamy ture
+            pthread_mutex_lock((*t_client).game_mutex);
+            (*t_client).checkers->turn = changeTurn((*t_client).checkers->turn);
+            pthread_mutex_unlock((*t_client).game_mutex);
+
+            //sprawdzenie, czy tura sie zmienia 
+            if((valid_move == 1) & (print_turn == false)){
+                printf("\nTURA PO ZMIANIE W GRACZU %d: %d\n", (*t_client).id, (*t_client).checkers->turn);
+            }
+            print_turn = true;
+            //wysylamy do przeciwnika wiadomosc TWOJ RUCH
+            write(*(*t_client).second_player_fd, yourTurn, 10);
+
+            valid_move = 0;
+
+            
+
+        
+            //read = read((*t_client).client_socket_descriptor, tab, sizeof(tab)-1);
+            /*if (n == -1){
+                printf("Read error occures\n");
                 close((*t_client).client_socket_descriptor);
                 free(t_client);
-                pthread_mutex_unlock((*t_client).connection_mutex);
-                pthread_exit(NULL);
             }
-            tab[readc] = 0;
-            printf("ODEBRANA WIADOMOSC: %s\n", tab);
-
-            //ZAKLADAMY, ZE WYSYLA WIADOMOSC 'ROW1COL1ROW2COL2', TAB[0] = ROW1 I TAB[1] = COL1, TAB[2] = ROW2, TAB[3] = COL2
-            start_position = getPosition(tab[0], tab[1]);
-            end_position = getPosition(tab[2], tab[3]);
-
-            int *ruchy = mozliweRuchy((*t_client).checkers->board, start_position, (*t_client).checkers->turn);
-            printf("ID GRACZA: %d;;; Wyznaczone mozliwe pola koncowe\n", (*t_client).id);
-            for(int i = 0; i < 2; i++)
-            {
-                printf("%d, ", ruchy[i]);
-            }
-            printf("\n");
-
-            pionek = (*t_client).checkers->board[start_position];
-            pole = (*t_client).checkers->board[end_position];
-            if(pionek == '0')
-            {
-                printf("Nie mozna wybrac pola startowego\n");
-            }            
-            else if(pole != '0')
-            {
-                 printf("Nie mozna wybrac pola koncowego\n");
-            }
-            else
-            {
-                (*t_client).checkers->board[end_position] = pionek;
-                (*t_client).checkers->board[start_position] = '0';
-            }
-            
-            
-
-            //SPRAWDZENIE RUCHU I ZMIANA NA PLANSZY
-
-            //printf("\nZMIENIAMY JEDNO POLE PLANSZY\n");
-
-            //(*t_client).board[5] = '6';
-
-            //printf("TABLICA KLIENTA PO ZMIANIE\n%s\n", (*t_client).board);
+            if (n == 0){
+                printf("Client disconnected\n");
+                close((*t_client).client_socket_descriptor);
+                free(t_client);
+            }*/
 
 
+        }
 
-            //WYSYLAMY TABLICE DO OBU KLIENTOW
-            write((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
-            //write(*(*t_client).second_player_fd, (*t_client).board, SIZE);
-            
-
-        //}
-    //read = read((*t_client).client_socket_descriptor, tab, sizeof(tab)-1);
-    /*if (n == -1){
-        printf("Read error occures\n");
-        close((*t_client).client_socket_descriptor);
-        free(t_client);
-    }
-    if (n == 0){
-        printf("Client disconnected\n");
-        close((*t_client).client_socket_descriptor);
-        free(t_client);
-    }*/
-
-
-    
-
-
+        print_turn = false;
 
     }
     sleep(5);
@@ -457,10 +521,12 @@ int main(){
     }
 
     //inicjalizacja tablicy mutexow
+    
     for(int i = 0 ; i < MAX_NUM_OF_GAMES; i++)
     {
         game_mutex[i] = PTHREAD_MUTEX_INITIALIZER;
     }
+    
 
 
 
@@ -504,6 +570,8 @@ int main(){
         exit(1);
     }
 
+    printf("Waiting for clients\n");
+
     while (1)
     {
         //connection_socket_descriptor - deskryptor polaczonego klienta
@@ -524,11 +592,14 @@ int main(){
             {
                 if(clients[i] == -1)
                 {
+                    printf("Connection socket desc: %d\n", connection_socket_descriptor);
+                    printf("1111 Clients pozycja: %d, wartosc: %d\n", i, clients[i]);
                     clients[i] = connection_socket_descriptor;
+                    printf("2222 Clients pozycja: %d, wartosc: %d\n", i, clients[i]);
                     client_id = i;
                     connected_clients++;
                     game_id = client_id/2;
-                    //printf("Liczba polaczonych klientow: %d, id klienta: %d\n", connected_clients, client_id);
+                    printf("Liczba polaczonych klientow: %d, id klienta: %d\n", connected_clients, client_id);
                     break;
                 }
             }
@@ -549,11 +620,12 @@ int main(){
             close(connection_socket_descriptor);
         }
 
-        pthread_mutex_unlock(&connection_mutex);
+        
 
 
         struct client_info *client = (client_info *)malloc(sizeof(struct client_info));
         (*client).client_socket_descriptor = connection_socket_descriptor;
+        printf("Id klienta: %d\n", client_id);
         (*client).id = client_id;        
         (*client).position_in_clients_array = &clients[client_id];
         (*client).second_player_fd = &clients[player_two_id];
@@ -561,6 +633,9 @@ int main(){
         (*client).connection_mutex = &connection_mutex;
         (*client).checkers = &games[game_id];
         (*client).game_mutex = &game_mutex[game_id];
+
+        pthread_mutex_unlock(&connection_mutex);
+       
         //TEMPORARY
         //Przypisanie tablicy do struktury klienta - DO ZMIANY NA STRUKTURE GRY
         //(*client).board = boardc;
