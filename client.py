@@ -7,6 +7,8 @@ PORT = 1234
 
 len_lst = [8, 8, 8, 8, 8, 8, 8, 8]
 
+my_turn = False
+
 #ZAMIANA STRINGA POSTACI 1234 NA LISTE
 def str_to_list(test_str):
 #test_str = "1234"
@@ -39,30 +41,56 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     #while(True):
         #odebranie informacji 
     player = s.recv(1)
-    players = player.decode()
-    print(players)
+    player_number = player.decode('utf-8')
+    print(player_number)
 
-    data = s.recv(64)
-    
-    
-    rec_str = data.decode()
-    print("Otrzymane na poczatku")
-    print(rec_str)
+    board = s.recv(64)   
+    rec_board = board.decode('utf-8')
+    print("Otrzymana plansza")
+    print(rec_board)
 
-    if(rec_str == "Twoj ruch\x00"):
-        print("TRUE: ", rec_str)
-
+    if(player_number == "1"):
+        print("Wszedlem w if numer gracza")
         #niby wyslanie ruchu
         print('Napisz 4 cyfry - ruch')
         string = input()
         #zamiana string na bytes
         byt = bytes(string, 'utf-8')
         s.sendall(byt)
+
+        #board = s.recv(64)
+        #rec_board = board.decode('utf-8')
+        #print("Otrzymana plansza po ruchu")
+        #print(rec_board)
+
+#nie odbieram ponownie planszy
+
+    while(1):
+        data = s.recv(64)
+        rec_str = data.decode('utf-8')
+
+
+        if(rec_str == "Twoj ruch\x00"):
+            my_turn = True
+            print("TRUE: ", rec_str)
+
+        else:
+            print("Otrzymano wiadomosc: ", rec_str)
+
+        if(my_turn == True):
+
+            #niby wyslanie ruchu
+            print('Napisz 4 cyfry - ruch')
+            string = input()
+            #zamiana string na bytes
+            byt = bytes(string, 'utf-8')
+            s.sendall(byt)
+            my_turn = False
         
 
 
-    else:
-        print("Ruch przeciwnika")
+    #else:
+    #    print("Ruch przeciwnika")
 
 
 #PIERWSZE ODEBRANIE PLANSZY
