@@ -29,6 +29,14 @@ def convert_1d_to_2d(lst, len_lst):
 
 #lst = [1,2,3,4,5,6,7,8]
 
+def show_board(rec_board):
+    #board = s.recv(64)
+    #rec_board = board.decode('utf-8')
+    res = str_to_list(rec_board)
+    res2d = convert_1d_to_2d(res, len_lst)
+    for i in range(8):
+        print(res2d[i])
+
 
 #res = convert_1d_to_2d(lst, len_lst)
 #print(res)
@@ -47,7 +55,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     board = s.recv(64)   
     rec_board = board.decode('utf-8')
     print("Otrzymana plansza")
-    print(rec_board)
+    #print(rec_board)
+    show_board(rec_board)
 
     if(player_number == "1"):
         print("Wszedlem w if numer gracza")
@@ -75,7 +84,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             print("TRUE: ", rec_str)
 
         else:
-            print("Otrzymano wiadomosc: ", rec_str)
+            print("Otrzymano wiadomosc: ")
+            show_board(rec_str)
 
         if(my_turn == True):
 
