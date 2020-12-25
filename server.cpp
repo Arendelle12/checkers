@@ -345,15 +345,13 @@ void *ThreadBehavior(void *client)
     printf("My id: %d\n", my_id);
 
     char yourTurn[10] = "Twoj ruch";
-
-    //(*t_client).checkers->turn = 0;
-
-
+    
     int player = (*t_client).id %2;
     //int converted_player = htonl(player);
 
     //TWORZENIE PLANSZY W STRUKTURZE GAME - DLA PIERWSZEGO GRACZA Z PARY
     //ORAZ NADANIE TURY
+    //I wyslanie numeru gracza
     if(player == 0)
     {
         (*t_client).checkers->board = createBoard();
@@ -372,8 +370,6 @@ void *ThreadBehavior(void *client)
     printf("\nTURA: %d\n", (*t_client).checkers->turn);
 
     printf("WATEK - CO ZAWIERA TABLICA KLIENTA\n%s\n", (*t_client).checkers->board);
-    //wyslanie numeru gracza
-    //write((*t_client).client_socket_descriptor, &converted_player, sizeof(converted_player)); 
     
     //WYSLANIE PLANSZY DO KLIENTA
     write((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
@@ -392,11 +388,6 @@ void *ThreadBehavior(void *client)
     //char selected_end;
     int valid_move = 0;
 
-    //printf("Przed oczytaniem wartosci tura\n");
-
-    //int *temp_tura = (*t_client).checkers->turn;
-
-    //printf("Po odczytaniu wartosci tura\n");
 
     //CZEKAMY NA WEJSCIE DRUGIEGO GRACZA - DO ZMIANY xd
     /*while(*(*t_client).second_player_fd == -1)
@@ -507,7 +498,7 @@ void *ThreadBehavior(void *client)
                 write(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
                 
                 ruchy = nextJump((*t_client).checkers->board, start_position, (*t_client).checkers->turn);
-                if(ruchy[2] == 1)
+                if(ruchy[4] == 1)
                 {
                     write((*t_client).client_socket_descriptor, yourTurn, 10);
                 }
