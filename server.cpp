@@ -23,6 +23,7 @@ using namespace std;
 - adresy nie wbite na stale
 - wykrywanie konca gry
 - damki
+- fragmentacja
 - uporzadkowanie kodu : po angielsku, osobny plik na gre (?)
 */
 
@@ -61,8 +62,9 @@ int *mozliweRuchy(char plansza[], int pozycjaStartowa, int tura)
     //1 - przesuniecie w prawo
     //2 - bicie w lewo
     //3 - bicie w prawo
-    int* buf = new int [4];
-    for(int i = 0; i < 4; i++)
+    //4 - bylo bicie
+    int* buf = new int [5];
+    for(int i = 0; i < 5; i++)
     {
         buf[i] = -1;
     }
@@ -87,6 +89,7 @@ int *mozliweRuchy(char plansza[], int pozycjaStartowa, int tura)
             {
                 //JEST BICIE w lewo
                 buf[2] = pozycjaStartowa + 14;
+                buf[4] = 1;
             }
         }
         if((pozycjaStartowa % 16 != 7) && (pozycjaStartowa % 16 != 14))
@@ -95,6 +98,7 @@ int *mozliweRuchy(char plansza[], int pozycjaStartowa, int tura)
             {
                 //JEST BICIE w prawo
                 buf[3] = pozycjaStartowa + 18;
+                buf[4] = 1;
             }
         }    
     }
@@ -118,6 +122,7 @@ int *mozliweRuchy(char plansza[], int pozycjaStartowa, int tura)
             {
                 //JEST BICIE w lewo
                 buf[2] = pozycjaStartowa - 18;
+                buf[4] = 1;
             }
         }
         if((pozycjaStartowa % 16 != 7) && (pozycjaStartowa % 16 != 14))
@@ -126,6 +131,7 @@ int *mozliweRuchy(char plansza[], int pozycjaStartowa, int tura)
             {
                 //JEST BICIE w prawo
                 buf[3] = pozycjaStartowa - 14;
+                buf[4] = 1;
             }
         }  
     }
@@ -153,9 +159,10 @@ char *jump(char board[], int start_position, int end_position)
 //do zmiany jak dam rade xD
 int *nextJump(char plansza[], int pozycjaStartowa, int tura)
 {
-    //3 pozycja nas informuje, czy bylo bicie: -1 nie bylo, 1 bylo
-    int* buf = new int [3];
-    for(int i = 0; i < 3; i++)
+    //pierwsze dwa pola sie nie zmieniaja - potrzebne do dzialania kodu
+    //5 pozycja nas informuje, czy bylo bicie: -1 nie bylo, 1 bylo
+    int* buf = new int [5];
+    for(int i = 0; i < 5; i++)
     {
         buf[i] = -1;
     }
@@ -168,8 +175,8 @@ int *nextJump(char plansza[], int pozycjaStartowa, int tura)
             if((plansza[pozycjaStartowa + 7] == '2') && (plansza[pozycjaStartowa + 14] == '0'))
             {
                 //JEST BICIE
-                buf[0] = pozycjaStartowa + 14;
-                buf[2] = 1;
+                buf[2] = pozycjaStartowa + 14;
+                buf[4] = 1;
             }
         }
         if((pozycjaStartowa % 16 != 7) && (pozycjaStartowa % 16 != 14))
@@ -177,8 +184,8 @@ int *nextJump(char plansza[], int pozycjaStartowa, int tura)
             if((plansza[pozycjaStartowa + 9] == '2') && (plansza[pozycjaStartowa + 18] == '0'))
             {
                 //JEST BICIE
-                buf[1] = pozycjaStartowa + 18;
-                buf[2] = 1;
+                buf[3] = pozycjaStartowa + 18;
+                buf[4] = 1;
             }
         }    
     }
@@ -190,8 +197,8 @@ int *nextJump(char plansza[], int pozycjaStartowa, int tura)
             if((plansza[pozycjaStartowa - 9] == '1') && (plansza[pozycjaStartowa - 18] == '0'))
             {
                 //JEST BICIE
-                buf[0] = pozycjaStartowa - 18;
-                buf[2] = 1;
+                buf[2] = pozycjaStartowa - 18;
+                buf[4] = 1;
             }
         }
         if((pozycjaStartowa % 16 != 7) && (pozycjaStartowa % 16 != 14))
@@ -199,8 +206,8 @@ int *nextJump(char plansza[], int pozycjaStartowa, int tura)
             if((plansza[pozycjaStartowa - 7] == '1') && (plansza[pozycjaStartowa - 14] == '0'))
             {
                 //JEST BICIE
-                buf[1] = pozycjaStartowa - 14;
-                buf[2] = 1;
+                buf[3] = pozycjaStartowa - 14;
+                buf[4] = 1;
             }
         }  
     }
@@ -268,8 +275,7 @@ int changeTurn(int turn)
         turn = 0;    
     }
 
-    return turn;
-    
+    return turn;    
 }
 
 int getPosition(char row, char col)
@@ -493,7 +499,6 @@ void *ThreadBehavior(void *client)
             //wysylamy plansze do obu graczy
             //nastepnie sprawdzamy, czy jest mozliwe kolejne bicie
             //jesli tak, wyslij wiadomosc yourTurn
-            //TO jest zle
             if((end_position == ruchy[2]) || (end_position == ruchy[3]))
             {
                 (*t_client).checkers->board = jump((*t_client).checkers->board, start_position, end_position);
@@ -502,39 +507,37 @@ void *ThreadBehavior(void *client)
                 write(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
                 
                 ruchy = nextJump((*t_client).checkers->board, start_position, (*t_client).checkers->turn);
-            }
-            /*
-            if(ruchy[2] == 1)
-            {
-                (*t_client).checkers->board = jump((*t_client).checkers->board, start_position, end_position);
-                ruchy = nextJump((*t_client).checkers->board, start_position, (*t_client).checkers->turn);
                 if(ruchy[2] == 1)
                 {
-
+                    write((*t_client).client_socket_descriptor, yourTurn, 10);
                 }
-            }*/
-
-
-            //wysylamy plansze do obu klientow
-            write((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
-            write(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
-
-            //printf do usuniecia
-            if((valid_move == 1) & (print_turn == false)){
-                printf("\nTURA PRZED ZMIANA W GRACZU %d: %d\n", (*t_client).id, (*t_client).checkers->turn);
             }
-            //zmieniamy ture
-            pthread_mutex_lock((*t_client).game_mutex);
-            (*t_client).checkers->turn = changeTurn((*t_client).checkers->turn);
-            pthread_mutex_unlock((*t_client).game_mutex);
+            else
+            {
+                //wysylamy plansze do obu klientow
+                write((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
+                write(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
 
-            //sprawdzenie, czy tura sie zmienia 
-            if((valid_move == 1) & (print_turn == false)){
-                printf("\nTURA PO ZMIANIE W GRACZU %d: %d\n", (*t_client).id, (*t_client).checkers->turn);
+                //printf do usuniecia
+                if((valid_move == 1) & (print_turn == false)){
+                    printf("\nTURA PRZED ZMIANA W GRACZU %d: %d\n", (*t_client).id, (*t_client).checkers->turn);
+                }
+                //zmieniamy ture
+                pthread_mutex_lock((*t_client).game_mutex);
+                (*t_client).checkers->turn = changeTurn((*t_client).checkers->turn);
+                pthread_mutex_unlock((*t_client).game_mutex);
+
+                //sprawdzenie, czy tura sie zmienia 
+                if((valid_move == 1) & (print_turn == false)){
+                    printf("\nTURA PO ZMIANIE W GRACZU %d: %d\n", (*t_client).id, (*t_client).checkers->turn);
+                }
+                print_turn = true;
+                //wysylamy do przeciwnika wiadomosc TWOJ RUCH
+                write(*(*t_client).second_player_fd, yourTurn, 10);
             }
-            print_turn = true;
-            //wysylamy do przeciwnika wiadomosc TWOJ RUCH
-            write(*(*t_client).second_player_fd, yourTurn, 10);
+
+
+            
 
             valid_move = 0;
 
