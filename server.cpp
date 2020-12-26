@@ -161,11 +161,27 @@ int *nextJump(char plansza[], int pozycjaStartowa, int tura)
 {
     //pierwsze dwa pola sie nie zmieniaja - potrzebne do dzialania kodu
     //5 pozycja nas informuje, czy bylo bicie: -1 nie bylo, 1 bylo
+    printf("Debug funkcji kolejneBicie\n");
     int* buf = new int [5];
     for(int i = 0; i < 5; i++)
     {
         buf[i] = -1;
     }
+    for(int i = 0; i < 5; i++)
+    {
+        printf("Buf[%d] = %d\n", i, buf[i]);
+    }
+    printf("Tura w funkcji: %d\n", tura);
+
+    printf("\n plansza w funkcji: \n");
+    for(int i = 0; i < 8; i++){
+        for(int j = 0; j < 8; j++){ 
+            printf("%d ",plansza[i*8+j]-'0');
+        }
+        printf("\n");
+    }
+
+    printf("Pozycja startowa w funkcji: %d\n", pozycjaStartowa);
 
     if(tura == 0)
     {   
@@ -211,6 +227,14 @@ int *nextJump(char plansza[], int pozycjaStartowa, int tura)
             }
         }  
     }
+        
+    printf("Wyznaczone bicia w funkcji\n");
+    for(int i = 0; i < 5; i++)
+    {
+        printf("%d, ", buf[i]);
+    }
+    printf("\n\n");
+    
     return buf;
 }
 
@@ -347,7 +371,6 @@ void *ThreadBehavior(void *client)
     char yourTurn[10] = "Twoj ruch";
     
     int player = (*t_client).id %2;
-    //int converted_player = htonl(player);
 
     //TWORZENIE PLANSZY W STRUKTURZE GAME - DLA PIERWSZEGO GRACZA Z PARY
     //ORAZ NADANIE TURY
@@ -428,32 +451,46 @@ void *ThreadBehavior(void *client)
                 //ZAKLADAMY, ZE WYSYLA WIADOMOSC 'ROW1COL1ROW2COL2', TAB[0] = ROW1 I TAB[1] = COL1, TAB[2] = ROW2, TAB[3] = COL2
                 start_position = getPosition(tab[0], tab[1]);
                 end_position = getPosition(tab[2], tab[3]);
+                printf("ID GRACZA: %d;;; start: %d, end: %d\n", (*t_client).id, start_position, end_position);
 
                 //sprawdzenie, czy gracz nacisnal wlasciwy pionek
 
                 if( ((*t_client).checkers->turn == 0) && ((*t_client).checkers->board[start_position] == '1') )
                 {
                     valid_move = 1;
+                    printf("ID GRACZA: %d;;; poprawny start\n", (*t_client).id);
                 }
                 else if( ((*t_client).checkers->turn == 1) && ((*t_client).checkers->board[start_position] == '2') )
                 {
                     valid_move = 1;
+                    printf("ID GRACZA: %d;;; poprawny start\n", (*t_client).id);
                 }
                 else
                 {
+                    printf("ID GRACZA: %d;;; START NIEPOPRAWNY\n", (*t_client).id);
                     write((*t_client).client_socket_descriptor, yourTurn, 10);
                     //WRACAMY DO POCZATKU PETLI - ZEBY ODCZYTAC WIADOMOSC
                     continue;
                 }
                 
                 //WYZNACZANIE MOZLIWYCH RUCHOW DLA WYBRANEJ POZYCJI STARTOWEJ
-                ruchy = mozliweRuchy((*t_client).checkers->board, start_position, (*t_client).checkers->turn);
+                //jesli bylo bicie - wyznaczamy kolejne bicie
+                //jesli nie - wszystkie mozliwe ruchy
+                if(isJump == true){
+                    ruchy = nextJump((*t_client).checkers->board, start_position, (*t_client).checkers->turn);
+                }
+                else{
+                    ruchy = mozliweRuchy((*t_client).checkers->board, start_position, (*t_client).checkers->turn);
+                }
+                //isJump zmieniamy na false
+                isJump = false;
                 printf("ID GRACZA: %d;;; Wyznaczone mozliwe pola koncowe\n", (*t_client).id);
                 for(int i = 0; i < 4; i++)
                 {
                     printf("%d, ", ruchy[i]);
                 }
                 printf("\n");
+                printf("ID GRACZA: %d;;; Wybrane pole koncowe: %d\n", (*t_client).id, end_position);
 
                 //PRZYPISUJEMY 0, ZEBY TERAZ SPRAWDZIC CZY POZYCJA KONCOWA JEST PRAWIDLOWA
                 valid_move = 0;
@@ -492,16 +529,48 @@ void *ThreadBehavior(void *client)
             //jesli tak, wyslij wiadomosc yourTurn
             if((end_position == ruchy[2]) || (end_position == ruchy[3]))
             {
+                printf("Wszedlem w if od bicia\n");
                 (*t_client).checkers->board = jump((*t_client).checkers->board, start_position, end_position);
+                //jest bicie
+                isJump = true;
 
                 write((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
                 write(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
+
+                printf("ID klienta: %d;;; tablica klienta PO BICIU\n", (*t_client).id);
+                for(int i = 0; i < 8; i++){
+                    for(int j = 0; j < 8; j++){ 
+                        printf("%d ",(*t_client).checkers->board[i*8+j]-'0');
+                    }
+                    printf("\n");
+                }
                 
-                ruchy = nextJump((*t_client).checkers->board, start_position, (*t_client).checkers->turn);
+                ruchy = nextJump((*t_client).checkers->board, end_position, (*t_client).checkers->turn);
+
+                //printf do usuniecia
+                printf("\nID GRACZA: %d;;; Wyznaczone kolejne bicia: \n", (*t_client).id);
+                for(int i = 0; i < 5; i++)
+                {
+                    printf("%d, ", ruchy[i]);
+                }
+                printf("\n");
+
+
                 if(ruchy[4] == 1)
                 {
                     write((*t_client).client_socket_descriptor, yourTurn, 10);
                 }
+                else
+                {
+                    //zmieniamy ture
+                    pthread_mutex_lock((*t_client).game_mutex);
+                    (*t_client).checkers->turn = changeTurn((*t_client).checkers->turn);
+                    pthread_mutex_unlock((*t_client).game_mutex);
+
+                    //wysylamy do przeciwnika wiadomosc TWOJ RUCH
+                    write(*(*t_client).second_player_fd, yourTurn, 10);
+                }
+                
             }
             else
             {
