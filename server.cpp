@@ -238,6 +238,32 @@ int *nextJump(char plansza[], int pozycjaStartowa, int tura)
     return buf;
 }
 
+bool validStart(int turn, char startValue)
+{
+    if((turn == 0) && (startValue == '1')){
+        return true;
+    }
+    else if((turn == 1) && (startValue == '2')){
+        return true;
+    }
+    else{
+        return false;
+    }
+    
+}
+
+bool validEnd(int moves[], int endPosition)
+{
+    for(int i = 0; i < 4; i++)
+    {
+        if(endPosition == moves[i])
+        {
+            return true;
+            break;
+        }
+    }
+    return false;
+}
 
 //ZAMIANA TABLICY CHAR NA TABLICE INT
 int *charArrayToInt(char array[])
@@ -409,7 +435,7 @@ void *ThreadBehavior(void *client)
     int end_position;
     //char selected_start;
     //char selected_end;
-    int valid_move = 0;
+    bool valid_move = false;
 
 
     //CZEKAMY NA WEJSCIE DRUGIEGO GRACZA - DO ZMIANY xd
@@ -421,6 +447,8 @@ void *ThreadBehavior(void *client)
     bool print_turn = false;
     int *ruchy;
     bool isJump = false;
+    bool rightStart = false;
+    bool rightEnd = false;
    // printf("Przed while true\n");
     while(1)
     {    
@@ -430,7 +458,7 @@ void *ThreadBehavior(void *client)
         {  
             //printf("Wszedlem w if temp_tura = player\n");
             //DOPOKI RUCH NIE JEST PRAWIDLOWY
-            while(valid_move == 0)
+            while(valid_move == false)
             {
                 //ODCZYTUJEMY RUCH
                 readc = read((*t_client).client_socket_descriptor, tab, sizeof(tab)-1);
@@ -454,15 +482,27 @@ void *ThreadBehavior(void *client)
                 printf("ID GRACZA: %d;;; start: %d, end: %d\n", (*t_client).id, start_position, end_position);
 
                 //sprawdzenie, czy gracz nacisnal wlasciwy pionek
+                rightStart = validStart((*t_client).checkers->turn, (*t_client).checkers->board[start_position]);
 
+                if(rightStart == true){
+                    valid_move = true;
+                    printf("ID GRACZA: %d;;; poprawny start\n", (*t_client).id);
+                }
+                else{
+                    printf("ID GRACZA: %d;;; START NIEPOPRAWNY\n", (*t_client).id);
+                    write((*t_client).client_socket_descriptor, yourTurn, 10);
+                    //WRACAMY DO POCZATKU PETLI - ZEBY ODCZYTAC WIADOMOSC
+                    continue;
+                }
+                /*
                 if( ((*t_client).checkers->turn == 0) && ((*t_client).checkers->board[start_position] == '1') )
                 {
-                    valid_move = 1;
+                    valid_move = true;
                     printf("ID GRACZA: %d;;; poprawny start\n", (*t_client).id);
                 }
                 else if( ((*t_client).checkers->turn == 1) && ((*t_client).checkers->board[start_position] == '2') )
                 {
-                    valid_move = 1;
+                    valid_move = true;
                     printf("ID GRACZA: %d;;; poprawny start\n", (*t_client).id);
                 }
                 else
@@ -472,6 +512,7 @@ void *ThreadBehavior(void *client)
                     //WRACAMY DO POCZATKU PETLI - ZEBY ODCZYTAC WIADOMOSC
                     continue;
                 }
+                */
                 
                 //WYZNACZANIE MOZLIWYCH RUCHOW DLA WYBRANEJ POZYCJI STARTOWEJ
                 //jesli bylo bicie - wyznaczamy kolejne bicie
@@ -492,22 +533,32 @@ void *ThreadBehavior(void *client)
                 printf("\n");
                 printf("ID GRACZA: %d;;; Wybrane pole koncowe: %d\n", (*t_client).id, end_position);
 
-                //PRZYPISUJEMY 0, ZEBY TERAZ SPRAWDZIC CZY POZYCJA KONCOWA JEST PRAWIDLOWA
-                valid_move = 0;
+                //PRZYPISUJEMY false, ZEBY TERAZ SPRAWDZIC CZY POZYCJA KONCOWA JEST PRAWIDLOWA
+                valid_move = false;
 
                 //SPRAWDZENIE, CZY POZYCJA END_POSITION POKRYWA SIE Z KTORAS Z WYZNACZONYCH
+                rightEnd = validEnd(ruchy, end_position);
+                if(rightEnd == true){
+                    //POZYCJA KONCOWA PRAWIDLOWA
+                    valid_move = true;
+                    printf("ID GRACZA: %d;;; Prawidlowa pozycja koncowa\n", (*t_client).id);
+                    break;
+                }
+                /*
                 for(int i = 0; i < 4; i++)
                 {
                     if(end_position == ruchy[i])
                     {
                         //POZYCJA KONCOWA PRAWIDLOWA
-                        valid_move = 1;
+                        valid_move = true;
+                        printf("ID GRACZA: %d;;; Prawidlowa pozycja koncowa\n", (*t_client).id);
                         break;
                     }
-                }
+                }*/
 
-                if(valid_move == 0)
+                if(valid_move == false)
                 {
+                    printf("ID GRACZA: %d;;; KONIEC NIEPOPRAWNY\n", (*t_client).id);
                     write((*t_client).client_socket_descriptor, yourTurn, 10);
                     //WRACAMY DO POCZATKU PETLI - ZEBY ODCZYTAC WIADOMOSC
                     continue;
@@ -579,7 +630,7 @@ void *ThreadBehavior(void *client)
                 write(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
 
                 //printf do usuniecia
-                if((valid_move == 1) & (print_turn == false)){
+                if((valid_move == true) & (print_turn == false)){
                     printf("\nTURA PRZED ZMIANA W GRACZU %d: %d\n", (*t_client).id, (*t_client).checkers->turn);
                 }
                 //zmieniamy ture
@@ -588,7 +639,7 @@ void *ThreadBehavior(void *client)
                 pthread_mutex_unlock((*t_client).game_mutex);
 
                 //sprawdzenie, czy tura sie zmienia 
-                if((valid_move == 1) & (print_turn == false)){
+                if((valid_move == true) & (print_turn == false)){
                     printf("\nTURA PO ZMIANIE W GRACZU %d: %d\n", (*t_client).id, (*t_client).checkers->turn);
                 }
                 print_turn = true;
@@ -599,7 +650,7 @@ void *ThreadBehavior(void *client)
 
             
 
-            valid_move = 0;
+            valid_move = false;
 
             
 
