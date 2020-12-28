@@ -1,6 +1,9 @@
 import socket
 import time
+import pygame
 from itertools import chain, islice
+from constants import *
+from board import Board
 
 HOST = "127.0.0.1"
 PORT = 1234
@@ -8,6 +11,11 @@ PORT = 1234
 len_lst = [8, 8, 8, 8, 8, 8, 8, 8]
 
 my_turn = False
+
+#FPS = 60
+#game window
+WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Checkers")
 
 #ZAMIANA STRINGA POSTACI 1234 NA LISTE
 def str_to_list(test_str):
@@ -36,6 +44,7 @@ def show_board(rec_board):
     res2d = convert_1d_to_2d(res, len_lst)
     for i in range(8):
         print(res2d[i])
+    return res2d
 
 
 #res = convert_1d_to_2d(lst, len_lst)
@@ -45,6 +54,15 @@ def show_board(rec_board):
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
+
+    pygame_board = Board()
+    pygame_board.draw_squares(WINDOW)
+    pygame.display.update()
+
+    #clock
+    #clock = pygame.time.Clock()
+    #run
+    #run = True
 
     #while(True):
         #odebranie informacji 
@@ -56,7 +74,15 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     rec_board = board.decode('utf-8')
     print("Otrzymana plansza")
     #print(rec_board)
-    show_board(rec_board)
+    board_2d = show_board(rec_board)
+
+    pygame_board.create_board(board_2d)
+
+    pygame_board.draw(WINDOW, board_2d)
+    pygame.display.update()
+    #print(board_2d)
+
+
 
     if(player_number == "1"):
         print("Wszedlem w if numer gracza")
@@ -75,9 +101,19 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 #nie odbieram ponownie planszy
 
     while(1):
+        #clock.tick(FPS)
         data = s.recv(64)
         rec_str = data.decode('utf-8')
 
+        """
+        if(run == True):
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    run = False
+
+        if(run == False):
+            pygame.quit() 
+        """      
 
         if(rec_str == "Twoj ruch\x00"):
             my_turn = True
