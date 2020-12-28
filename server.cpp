@@ -418,10 +418,7 @@ void *ThreadBehavior(void *client)
 
     printf("\nTURA: %d\n", (*t_client).checkers->turn);
 
-    printf("WATEK - CO ZAWIERA TABLICA KLIENTA\n%s\n", (*t_client).checkers->board);
     
-    //WYSLANIE PLANSZY DO KLIENTA
-    write((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
     
     //ODBIERAMY RUCH A WYSYLAMY PLANSZE
     char tab[BUF_SIZE];
@@ -436,19 +433,26 @@ void *ThreadBehavior(void *client)
     //char selected_start;
     //char selected_end;
     bool valid_move = false;
-
-
-    //CZEKAMY NA WEJSCIE DRUGIEGO GRACZA - DO ZMIANY xd
-    /*while(*(*t_client).second_player_fd == -1)
-    {
-        sleep(1);
-    }
-*/
-    bool print_turn = false;
     int *ruchy;
     bool isJump = false;
     bool rightStart = false;
     bool rightEnd = false;
+
+
+    bool print_turn = false;
+
+
+    //CZEKAMY NA WEJSCIE DRUGIEGO GRACZA
+    while(*(*t_client).second_player_fd == -1)
+    {
+        
+    }
+
+    printf("WATEK - CO ZAWIERA TABLICA KLIENTA\n%s\n", (*t_client).checkers->board);
+    
+    //WYSLANIE PLANSZY DO KLIENTA
+    write((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
+
    // printf("Przed while true\n");
     while(1)
     {    
