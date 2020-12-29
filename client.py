@@ -11,6 +11,8 @@ PORT = 1234
 len_lst = [8, 8, 8, 8, 8, 8, 8, 8]
 
 my_turn = False
+my_start = False
+my_end = False
 
 #FPS = 60
 #game window
@@ -46,6 +48,19 @@ def show_board(rec_board):
         print(res2d[i])
     return res2d
 
+#pos is a tuple
+def get_row_col_from_mouse(pos):
+    x, y = pos
+    row = int(y // SQUARE_SIZE)
+    col = int(x // SQUARE_SIZE)
+    return row, col
+
+def move_to_string(start, end):
+    move = start + end
+    #lista string
+    data = [str(x) for x in move] 
+    send_str = ''.join(data)
+    return send_str
 
 #res = convert_1d_to_2d(lst, len_lst)
 #print(res)
@@ -55,6 +70,7 @@ def show_board(rec_board):
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
 
+    #narysowanie okna z plansza
     pygame_board = Board()
     pygame_board.draw_squares(WINDOW)
     pygame.display.update()
@@ -76,6 +92,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     #print(rec_board)
     board_2d = show_board(rec_board)
 
+    #narysowanie pionkow
     pygame_board.create_board(board_2d)
 
     pygame_board.draw(WINDOW, board_2d)
@@ -87,18 +104,39 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     if(player_number == "1"):
         print("Wszedlem w if numer gracza")
         #niby wyslanie ruchu
+        print("Nacisnij na plansze")
+
+        #test - zbieranie ruchu z planszy
+        while(my_start == False):
+            for event in pygame.event.get():            
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    start_pos = pygame.mouse.get_pos()
+                    start_tuple = get_row_col_from_mouse(start_pos)
+                    my_start = True
+
+        while(my_end == False):
+            for event in pygame.event.get():            
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    end_pos = pygame.mouse.get_pos()
+                    end_tuple = get_row_col_from_mouse(end_pos)
+                    my_end = True
+
+        print(start_tuple, end_tuple)
+        my_start = False
+        my_end = False
+
         print('Napisz 4 cyfry - ruch')
-        string = input()
+
+        #string = input()
+
+        #string z pozycji na planszy
+        string = move_to_string(start_tuple, end_tuple)
+        print(string)
         #zamiana string na bytes
         byt = bytes(string, 'utf-8')
         s.sendall(byt)
 
-        #board = s.recv(64)
-        #rec_board = board.decode('utf-8')
-        #print("Otrzymana plansza po ruchu")
-        #print(rec_board)
 
-#nie odbieram ponownie planszy
 
     while(1):
         #clock.tick(FPS)
