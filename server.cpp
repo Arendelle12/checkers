@@ -33,7 +33,9 @@ struct game
     int turn;
     //int player1;
     //int player2;
-    int move[4];
+    //int move[4];
+    int first_player_pieces;
+    int second_player_pieces;
 };
 
 struct client_info
@@ -400,6 +402,7 @@ void *ThreadBehavior(void *client)
 
     //TWORZENIE PLANSZY W STRUKTURZE GAME - DLA PIERWSZEGO GRACZA Z PARY
     //ORAZ NADANIE TURY
+    //przypisanie liczby pionkow dla kazdego gracza
     //I wyslanie numeru gracza
     if(player == 0)
     {
@@ -408,6 +411,9 @@ void *ThreadBehavior(void *client)
         //printf("\nTURA: %d\n", *((*t_client).checkers->turn));
         
         (*t_client).checkers->turn = 0;
+
+        (*t_client).checkers->first_player_pieces = 12;
+        (*t_client).checkers->second_player_pieces = 12;
         //printf("\nNadano ture\n");
         write((*t_client).client_socket_descriptor, "1", 1);
     }
@@ -589,6 +595,26 @@ void *ThreadBehavior(void *client)
                 //jest bicie
                 isJump = true;
 
+                //zmieniamy liczbe pionkow po biciu
+                if((*t_client).checkers->turn == 0){
+                    pthread_mutex_lock((*t_client).game_mutex);
+                    (*t_client).checkers->second_player_pieces--;
+                    printf("ID gracza: %d, liczba pionkow przeciwnika: %d\n", (*t_client).id, (*t_client).checkers->second_player_pieces);
+                    pthread_mutex_unlock((*t_client).game_mutex);
+                    if((*t_client).checkers->second_player_pieces == 0){
+                        printf("\n!!!KONIEC GRY!!!\n");
+                    }
+                }
+                else{
+                    pthread_mutex_lock((*t_client).game_mutex);
+                    (*t_client).checkers->first_player_pieces--;
+                    printf("ID gracza: %d, liczba pionkow przeciwnika: %d\n", (*t_client).id, (*t_client).checkers->first_player_pieces);
+                    pthread_mutex_unlock((*t_client).game_mutex);
+                    if((*t_client).checkers->first_player_pieces == 0){
+                        printf("\n!!!KONIEC GRY!!!\n");
+                    }
+                }
+
                 write((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
                 write(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
 
@@ -617,6 +643,8 @@ void *ThreadBehavior(void *client)
                 }
                 else
                 {
+                    //przed zmiana tury zmiana isJump
+                    isJump = false;
                     //zmieniamy ture
                     pthread_mutex_lock((*t_client).game_mutex);
                     (*t_client).checkers->turn = changeTurn((*t_client).checkers->turn);
