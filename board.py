@@ -24,7 +24,7 @@ class Board:
                 else:
                     self.board[row].append(0)
 
-    def draw(self, window, board_2d):
+    def draw(self, window):
         self.draw_squares(window)
         for row in range(ROWS):
             for col in range(COLUMNS):
@@ -32,10 +32,7 @@ class Board:
                 if piece != 0:
                     piece.draw(window)
 
-                """
-                if board_2d[row][col] == 1:
-                    piece.draw(window)
-                elif board_2d[row][col] == 2:
-                    piece.draw(window)
-                """
+    def update(self, window):
+        self.board.draw(window)
+        pygame.display.update()
                 
