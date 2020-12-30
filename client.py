@@ -15,6 +15,7 @@ my_start = False
 my_end = False
 
 #FPS = 60
+pygame.init()
 #game window
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Checkers")
@@ -39,6 +40,7 @@ def convert_1d_to_2d(lst, len_lst):
 
 #lst = [1,2,3,4,5,6,7,8]
 
+#return 2 dimensional list
 def show_board(rec_board):
     #board = s.recv(64)
     #rec_board = board.decode('utf-8')
@@ -95,7 +97,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     #narysowanie pionkow
     pygame_board.create_board(board_2d)
 
-    pygame_board.draw(WINDOW, board_2d)
+    pygame_board.draw(WINDOW)
     pygame.display.update()
     #print(board_2d)
 
