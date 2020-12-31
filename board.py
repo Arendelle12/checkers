@@ -1,40 +1,41 @@
 import pygame
-from constants import BLACK, WHITE, ROWS, COLUMNS, SQUARE_SIZE, PEACH, BLUE
+from constants import *
 from piece import Piece
 
 class Board:
     def __init__(self):
-        self.board = []
-        #self.create_board()
+        pygame.init()
+        self.window = pygame.display.set_mode((WIDTH, HEIGHT))
+        pygame.display.set_caption("Checkers")
 
-    def draw_squares(self, window):
-        window.fill(BLACK)
+    def draw_squares(self):
+        self.window.fill(BLACK)
         for row in range(ROWS):
             for col in range(row % 2, COLUMNS, 2):
-                pygame.draw.rect(window, WHITE, (row * SQUARE_SIZE, col * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+                pygame.draw.rect(self.window, WHITE, (row * SQUARE_SIZE, col * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+        pygame.display.update()
 
     def create_board(self, board_2d):
-        self.board = []
+        board = []
         for row in range(ROWS):
-            self.board.append([])
+            board.append([])
             for col in range(COLUMNS):
                 if board_2d[row][col] == 1:
-                    self.board[row].append(Piece(row, col, PEACH))                    
+                    board[row].append(Piece(row, col, PEACH))                    
                 elif board_2d[row][col] == 2:
-                    self.board[row].append(Piece(row, col, BLUE))
+                    board[row].append(Piece(row, col, BLUE))
                 else:
-                    self.board[row].append(0)
+                    board[row].append(0)
+        return board
 
-    def draw(self, window):
-        self.draw_squares(window)
+    def draw(self, board_2d):
+        board = self.create_board(board_2d)
+        self.draw_squares()
         for row in range(ROWS):
             for col in range(COLUMNS):
-                piece = self.board[row][col]
+                piece = board[row][col]
                 if piece != 0:
-                    piece.draw(window)
-
-    def update(self, window):
-        self.board.draw(window)
+                    piece.draw(self.window)
         pygame.display.update()
 
     def _get_row_col_from_mouse(self, pos):
@@ -52,5 +53,7 @@ class Board:
 
     def get_moves(self):
         start_tuple = self._wait_for_press()
+        print(start_tuple)
         end_tuple = self._wait_for_press()
+        print(end_tuple)
         return start_tuple, end_tuple

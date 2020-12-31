@@ -1,6 +1,5 @@
 import socket
 import time
-import pygame
 from itertools import chain, islice
 from constants import *
 from board import Board
@@ -14,10 +13,9 @@ len_lst = [8, 8, 8, 8, 8, 8, 8, 8]
 my_turn = False
 
 #FPS = 60
-pygame.init()
+
 #game window
-WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Checkers")
+
 
 #ZAMIANA STRINGA POSTACI 1234 NA LISTE
 def str_to_list(test_str):
@@ -40,9 +38,7 @@ def convert_1d_to_2d(lst, len_lst):
 #lst = [1,2,3,4,5,6,7,8]
 
 #return 2 dimensional list
-def show_board(rec_board):
-    #board = s.recv(64)
-    #rec_board = board.decode('utf-8')
+def convert_board(rec_board):
     res = str_to_list(rec_board)
     res2d = convert_1d_to_2d(res, len_lst)
     for i in range(8):
@@ -70,8 +66,7 @@ def move_to_string(start, end):
 with Network() as s:
     #narysowanie okna z plansza
     pygame_board = Board()
-    pygame_board.draw_squares(WINDOW)
-    pygame.display.update()
+    pygame_board.draw_squares()
 
     #clock
     #clock = pygame.time.Clock()
@@ -89,7 +84,7 @@ with Network() as s:
     # rec_board = s.recv(64)
     # print("Otrzymana plansza")
 
-    # board_2d = show_board(rec_board)
+    # board_2d = convert_board(rec_board)
 
     #narysowanie pionkow
     # pygame_board.create_board(board_2d)
@@ -142,11 +137,10 @@ with Network() as s:
 
         else:
             print("Otrzymano wiadomosc: ")
-            board_2d = show_board(rec_str)
-            pygame_board.create_board(board_2d)
+            board_2d = convert_board(rec_str)
+            # pygame_board.create_board(board_2d)
 
-            pygame_board.draw(WINDOW)
-            pygame.display.update()
+            pygame_board.draw(board_2d)
 
 
         if(my_turn == True):
@@ -207,8 +201,6 @@ with Network() as s:
     
 #print('RECEIVED', data.decode())
 #print('RECEIVED', list(data))
-
-time.sleep(10)
 
 #ZAMIANA 2D LIST NA 1D
 """
