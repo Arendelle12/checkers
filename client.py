@@ -1,12 +1,7 @@
-import socket
-import time
-from itertools import chain, islice
+from itertools import islice
 from constants import *
 from board import Board
 from network import Network
-
-HOST = "127.0.0.1"
-PORT = 1234
 
 len_lst = [8, 8, 8, 8, 8, 8, 8, 8]
 
@@ -19,25 +14,13 @@ my_turn = False
 
 #ZAMIANA STRINGA POSTACI 1234 NA LISTE
 def str_to_list(test_str):
-#test_str = "1234"
     return [int(i) for i in test_str]
-
-    # res = []
-
-    # for i in test_str:
-    #     res.append(int(i))
-
-    # return res
-
-#print(res)
 
 #ZAMIANA 1D LIST NA 2D
 
 def convert_1d_to_2d(lst, len_lst):
     it = iter(lst)
     return [list(islice(it, i)) for i in len_lst]
-
-#lst = [1,2,3,4,5,6,7,8]
 
 #return 2 dimensional list
 def convert_board(rec_board):
@@ -54,9 +37,6 @@ def move_to_string(start, end):
     send_str = ''.join(data)
     return send_str
 
-#res = convert_1d_to_2d(lst, len_lst)
-#print(res)
-#print(type(res))
 
 with Network() as s:
     #narysowanie okna z plansza
@@ -74,42 +54,6 @@ with Network() as s:
     print(player_number)
     if(player_number == "1"):
         my_turn = True
-
-    
-    # rec_board = s.recv(64)
-    # print("Otrzymana plansza")
-
-    # board_2d = convert_board(rec_board)
-
-    #narysowanie pionkow
-    # pygame_board.create_board(board_2d)
-
-    # pygame_board.draw(WINDOW)
-    # pygame.display.update()
-    
-    #print(board_2d)
-
-
-    """
-    if(player_number == "1"):
-        print("Wszedlem w if numer gracza")
-        #niby wyslanie ruchu
-        print("Nacisnij na plansze")
-
-        start_tuple, end_tuple = pygame_board.get_moves()
-
-        print(start_tuple, end_tuple)
-
-        print('Napisz 4 cyfry - ruch')
-
-        #string = input()
-
-        #string z pozycji na planszy
-        string = move_to_string(start_tuple, end_tuple)
-        print(string)
-        #zamiana string na bytes
-        s.sendall(string)
-    """
 
 
     while(1):
@@ -133,8 +77,6 @@ with Network() as s:
         else:
             print("Otrzymano wiadomosc: ")
             board_2d = convert_board(rec_str)
-            # pygame_board.create_board(board_2d)
-
             pygame_board.draw(board_2d)
 
 
@@ -144,76 +86,7 @@ with Network() as s:
             print('Napisz 4 cyfry - ruch')
             start_tuple, end_tuple = pygame_board.get_moves()
             string = move_to_string(start_tuple, end_tuple)
-
-            #string = input()
-            #zamiana string na bytes
             print(string)
             s.sendall(string)
             my_turn = False
         
-
-
-    #else:
-    #    print("Ruch przeciwnika")
-
-
-#PIERWSZE ODEBRANIE PLANSZY
-        
-
-    """
-    res = str_to_list(rec_str)
-    res = convert_1d_to_2d(res, len_lst)
-    print('RECEIVED')
-    for i in range(8):
-        print(res[i])
-    
-
-
-    #WYSLANIE NIBY RUCHU
-
-    
-    #string = "Hello"
-    #byt = bytes(string, 'utf-8')
-
-    #s.sendall(b'Hello server')
-
-
-
-   
-
-    #DRUGIE ODEBRANIE PLANSZY
-    data = s.recv(1024)
-
-    rec_str = data.decode()
-
-    res = str_to_list(rec_str)
-    res = convert_1d_to_2d(res, len_lst)
-    print('RECEIVED')
-    for i in range(8):
-        print(res[i])
-        """
-
-    
-#print('RECEIVED', data.decode())
-#print('RECEIVED', list(data))
-
-#ZAMIANA 2D LIST NA 1D
-"""
-my_list = [[1,2,3,4],[5,6,7],[8,9,0]]
-one_d = list(chain.from_iterable(my_list))
-print(one_d)
-"""
-
-
-
-
-
-#ZAMIANA LISTY NA STRING POSTACI 1234
-"""
-my_list = [1, 2, 3, 4]
-#zamiana kazdego inta na string
-my_string_list = [str(int) for int in my_list]
-#polaczenie w jeden string
-my_string = "".join(my_string_list)
-print(my_string)
-"""
