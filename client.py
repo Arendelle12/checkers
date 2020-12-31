@@ -20,12 +20,14 @@ my_turn = False
 #ZAMIANA STRINGA POSTACI 1234 NA LISTE
 def str_to_list(test_str):
 #test_str = "1234"
-    res = []
+    return [int(i) for i in test_str]
 
-    for i in test_str:
-        res.append(int(i))
+    # res = []
 
-    return res
+    # for i in test_str:
+    #     res.append(int(i))
+
+    # return res
 
 #print(res)
 
@@ -44,13 +46,6 @@ def convert_board(rec_board):
     for i in range(8):
         print(res2d[i])
     return res2d
-
-#pos is a tuple
-def get_row_col_from_mouse(pos):
-    x, y = pos
-    row = int(y // SQUARE_SIZE)
-    col = int(x // SQUARE_SIZE)
-    return row, col
 
 def move_to_string(start, end):
     move = start + end
