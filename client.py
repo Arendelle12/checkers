@@ -4,6 +4,7 @@ import pygame
 from itertools import chain, islice
 from constants import *
 from board import Board
+from network import Network
 
 HOST = "127.0.0.1"
 PORT = 1234
@@ -68,10 +69,7 @@ def move_to_string(start, end):
 #print(res)
 #print(type(res))
 
-
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.connect((HOST, PORT))
-
+with Network() as s:
     #narysowanie okna z plansza
     pygame_board = Board()
     pygame_board.draw_squares(WINDOW)
@@ -84,12 +82,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
     #while(True):
         #odebranie informacji 
-    player = s.recv(1)
-    player_number = player.decode('utf-8')
+    player_number = s.recv(1)
     print(player_number)
 
-    board = s.recv(64)   
-    rec_board = board.decode('utf-8')
+    rec_board = s.recv(64)
     print("Otrzymana plansza")
     #print(rec_board)
     board_2d = show_board(rec_board)
@@ -135,15 +131,13 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         string = move_to_string(start_tuple, end_tuple)
         print(string)
         #zamiana string na bytes
-        byt = bytes(string, 'utf-8')
-        s.sendall(byt)
+        s.sendall(string)
 
 
 
     while(1):
         #clock.tick(FPS)
-        data = s.recv(64)
-        rec_str = data.decode('utf-8')
+        rec_str = s.recv(64)
 
         """
         if(run == True):
@@ -169,8 +163,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             print('Napisz 4 cyfry - ruch')
             string = input()
             #zamiana string na bytes
-            byt = bytes(string, 'utf-8')
-            s.sendall(byt)
+            s.sendall(string)
             my_turn = False
         
 

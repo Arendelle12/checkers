@@ -9,15 +9,20 @@ class Network:
         self.server = HOST
         self.port = PORT
         self.addr = (self.server, self.port)
-        self.connect()
 
-    def connect(self):
+    def __enter__(self):
+        print("Network __enter__")
         self.client.connect(self.addr)
+        return self
 
-    def send(self, move):
+    def __exit__(self, *args):
+        print("Network __exit__")
+        self.client.close()
+
+    def sendall(self, move):
         byt = bytes(move, 'utf-8')
         self.client.sendall(byt)
 
-    def receive(self, n):
+    def recv(self, n):
         byt = self.client.recv(n)
         return byt.decode('utf-8')
