@@ -14,6 +14,7 @@ class Board:
                 pygame.draw.rect(window, WHITE, (row * SQUARE_SIZE, col * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
     def create_board(self, board_2d):
+        self.board = []
         for row in range(ROWS):
             self.board.append([])
             for col in range(COLUMNS):

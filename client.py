@@ -82,21 +82,25 @@ with Network() as s:
         #odebranie informacji 
     player_number = s.recv(1)
     print(player_number)
+    if(player_number == "1"):
+        my_turn = True
 
-    rec_board = s.recv(64)
-    print("Otrzymana plansza")
-    #print(rec_board)
-    board_2d = show_board(rec_board)
+    
+    # rec_board = s.recv(64)
+    # print("Otrzymana plansza")
+
+    # board_2d = show_board(rec_board)
 
     #narysowanie pionkow
-    pygame_board.create_board(board_2d)
+    # pygame_board.create_board(board_2d)
 
-    pygame_board.draw(WINDOW)
-    pygame.display.update()
+    # pygame_board.draw(WINDOW)
+    # pygame.display.update()
+    
     #print(board_2d)
 
 
-
+    """
     if(player_number == "1"):
         print("Wszedlem w if numer gracza")
         #niby wyslanie ruchu
@@ -115,7 +119,7 @@ with Network() as s:
         print(string)
         #zamiana string na bytes
         s.sendall(string)
-
+    """
 
 
     while(1):
@@ -138,14 +142,23 @@ with Network() as s:
 
         else:
             print("Otrzymano wiadomosc: ")
-            show_board(rec_str)
+            board_2d = show_board(rec_str)
+            pygame_board.create_board(board_2d)
+
+            pygame_board.draw(WINDOW)
+            pygame.display.update()
+
 
         if(my_turn == True):
 
             #niby wyslanie ruchu
             print('Napisz 4 cyfry - ruch')
-            string = input()
+            start_tuple, end_tuple = pygame_board.get_moves()
+            string = move_to_string(start_tuple, end_tuple)
+
+            #string = input()
             #zamiana string na bytes
+            print(string)
             s.sendall(string)
             my_turn = False
         
