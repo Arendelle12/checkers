@@ -35,4 +35,21 @@ class Board:
     def update(self, window):
         self.board.draw(window)
         pygame.display.update()
-                
+
+    def _get_row_col_from_mouse(self, pos):
+        x, y = pos
+        row = int(y // SQUARE_SIZE)
+        col = int(x // SQUARE_SIZE)
+        return row, col
+
+    def _wait_for_press(self):
+        while(True):
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    start_pos = pygame.mouse.get_pos()
+                    return self._get_row_col_from_mouse(start_pos)
+
+    def get_moves(self):
+        start_tuple = self._wait_for_press()
+        end_tuple = self._wait_for_press()
+        return start_tuple, end_tuple

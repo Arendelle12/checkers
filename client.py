@@ -12,8 +12,6 @@ PORT = 1234
 len_lst = [8, 8, 8, 8, 8, 8, 8, 8]
 
 my_turn = False
-my_start = False
-my_end = False
 
 #FPS = 60
 pygame.init()
@@ -104,24 +102,9 @@ with Network() as s:
         #niby wyslanie ruchu
         print("Nacisnij na plansze")
 
-        #test - zbieranie ruchu z planszy
-        while(my_start == False):
-            for event in pygame.event.get():            
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    start_pos = pygame.mouse.get_pos()
-                    start_tuple = get_row_col_from_mouse(start_pos)
-                    my_start = True
-
-        while(my_end == False):
-            for event in pygame.event.get():            
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    end_pos = pygame.mouse.get_pos()
-                    end_tuple = get_row_col_from_mouse(end_pos)
-                    my_end = True
+        start_tuple, end_tuple = pygame_board.get_moves()
 
         print(start_tuple, end_tuple)
-        my_start = False
-        my_end = False
 
         print('Napisz 4 cyfry - ruch')
 
