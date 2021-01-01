@@ -27,9 +27,13 @@ class Board:
             board.append([])
             for col in range(COLUMNS):
                 if board_2d[row][col] == 1:
-                    board[row].append(Piece(row, col, PEACH))                    
+                    board[row].append(Piece(row, col, PEACH, False))                    
                 elif board_2d[row][col] == 2:
-                    board[row].append(Piece(row, col, BLUE))
+                    board[row].append(Piece(row, col, BLUE, False))
+                elif board_2d[row][col] == 3:
+                    board[row].append(Piece(row, col, PEACH, True))                    
+                elif board_2d[row][col] == 4:
+                    board[row].append(Piece(row, col, BLUE, True))
                 else:
                     board[row].append(0)
         return board
@@ -67,7 +71,7 @@ class Board:
         return start_tuple, end_tuple
 
     def show_text(self):
-        font = pygame.font.SysFont("ubuntu", 50)
+        font = pygame.font.SysFont("ubuntu", 70)
         text = font.render("Your turn", True, RED)
-        self.window.blit(text, (140, 180))
+        self.window.blit(text, (150, 210))
         pygame.display.update()

@@ -260,6 +260,20 @@ bool validEnd(int moves[], int endPosition)
     return false;
 }
 
+//UTWORZENIE DAMKI
+char *checkIfKing(char board[], int position)
+{
+    if((board[position] == '1') && (position / 8 == 7))
+    {
+        board[position] = '3';
+    }
+    else if((board[position] == '2') && (position / 8 == 0))
+    {
+        board[position] = '4';
+    }
+    return board;
+}
+
 //ZAMIANA TABLICY CHAR NA TABLICE INT
 int *charArrayToInt(char array[])
 {
@@ -537,6 +551,8 @@ void *ThreadBehavior(void *client)
             //przestawiamy pionek ze start_position na end_position
             (*t_client).checkers->board[end_position] = (*t_client).checkers->board[start_position];
             (*t_client).checkers->board[start_position] = '0';
+
+            (*t_client).checkers->board = checkIfKing((*t_client).checkers->board, end_position);
 
             //jesli bylo bicie, wykonaj bicie - zmiana pionka na 0
             //wysylamy plansze do obu graczy
