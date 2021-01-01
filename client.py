@@ -2,13 +2,14 @@ from constants import *
 from mappers import *
 from board import Board
 from network import Network
+from time import sleep
 
 my_turn = False
 
 #FPS = 60
 
 #game window
-
+board_2d = []
 with Network() as network:
     #narysowanie okna z plansza
     pygame_board = Board()
@@ -49,6 +50,9 @@ with Network() as network:
             pygame_board.draw(board_2d)
 
         if(my_turn == True):
+            pygame_board.show_text()
+            sleep(1)
+            pygame_board.draw(board_2d)
             #wyslanie ruchu
             start_field, end_field = pygame_board.get_moves()
             move = move_to_string(start_field, end_field)

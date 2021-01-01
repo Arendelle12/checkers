@@ -1,4 +1,5 @@
 import pygame
+from pygame import font
 from constants import *
 from piece import Piece
 
@@ -7,12 +8,17 @@ class Board:
         pygame.init()
         self.window = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("Checkers")
+        self.board_2d = []
+        self.start = None
 
     def draw_squares(self):
-        self.window.fill(BLACK)
+        self.window.fill(WHITE)
         for row in range(ROWS):
-            for col in range(row % 2, COLUMNS, 2):
-                pygame.draw.rect(self.window, WHITE, (row * SQUARE_SIZE, col * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+            for col in range((row+1) % 2 , COLUMNS, 2):
+                if((row, col) == self.start):
+                    pygame.draw.rect(self.window, LIGHTBLUE, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+                else:    
+                    pygame.draw.rect(self.window, BLACK, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
         pygame.display.update()
 
     def create_board(self, board_2d):
@@ -29,8 +35,10 @@ class Board:
         return board
 
     def draw(self, board_2d):
+        self.board_2d = board_2d
         board = self.create_board(board_2d)
         self.draw_squares()
+        self.start = None
         for row in range(ROWS):
             for col in range(COLUMNS):
                 piece = board[row][col]
@@ -53,7 +61,13 @@ class Board:
 
     def get_moves(self):
         start_tuple = self._wait_for_press()
-        print(start_tuple)
+        self.start = start_tuple
+        self.draw(self.board_2d)
         end_tuple = self._wait_for_press()
-        print(end_tuple)
         return start_tuple, end_tuple
+
+    def show_text(self):
+        font = pygame.font.SysFont("ubuntu", 50)
+        text = font.render("Your turn", True, RED)
+        self.window.blit(text, (140, 180))
+        pygame.display.update()
