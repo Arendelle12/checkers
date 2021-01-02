@@ -138,7 +138,6 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
                 }
             }
         }
-
     }
     else if((turn == 0) && (board[start_position] == '3'))
     {
@@ -163,10 +162,17 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
         bool oponent_piece = false;
         int delete_position = -1;
         int position_to_check = start_position + jump_value;
+        //int start_column = getColumnFromPosition(start_position);
         while (position_to_check != end_position)
         {
+            if((board[position_to_check] == '0') && ((isEdgeLeftColumn(position_to_check)) || (isEdgeRightColumn(position_to_check))))
+            {
+                printf("Koniec planszy\n");
+                return result;
+            }
             if((board[position_to_check] == '1') || (board[position_to_check] == '3'))
             {
+                printf("Moj pionek\n");
                 return result;
             }
             if((board[position_to_check] == '2') || (board[position_to_check] == '4'))
@@ -175,8 +181,15 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
                 {
                     return result;
                 }
-                oponent_piece = true;
-                delete_position = position_to_check;
+                else if(isEdgeLeftColumn(position_to_check) || isEdgeRightColumn(position_to_check))
+                {
+                    return result;
+                }
+                else
+                {
+                    oponent_piece = true;
+                    delete_position = position_to_check;
+                }
             }
 
             position_to_check += jump_value;
@@ -248,6 +261,11 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
         int position_to_check = start_position + jump_value;
         while (position_to_check != end_position)
         {
+            if((board[position_to_check] == '0') && ((isEdgeLeftColumn(position_to_check)) || (isEdgeRightColumn(position_to_check))))
+            {
+                printf("Koniec planszy\n");
+                return result;
+            }
             if((board[position_to_check] == '2') || (board[position_to_check] == '4'))
             {
                 return result;
@@ -258,8 +276,15 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
                 {
                     return result;
                 }
-                oponent_piece = true;
-                delete_position = position_to_check;
+                else if(isEdgeLeftColumn(position_to_check) || isEdgeRightColumn(position_to_check))
+                {
+                    return result;
+                }
+                else
+                {
+                    oponent_piece = true;
+                    delete_position = position_to_check;
+                } 
             }
 
             position_to_check += jump_value;
@@ -275,14 +300,16 @@ bool isNextJump(char board[], int start_position, int turn)
 {
     if((turn == 0) && (board[start_position] == '1'))
     {
-        if((start_position % 16 != 1) && (start_position % 16 != 8))
+        //if((start_position % 16 != 1) && (start_position % 16 != 8))
+        if(!isEdgeLeftColumn(start_position) && !isEdgeLeftColumn(start_position + 7))
         {
             if(((board[start_position + 7] == '2') || (board[start_position + 7] == '4')) && (board[start_position + 14] == '0'))
             {
                 return true;
             }
         }
-        if((start_position % 16 != 7) && (start_position % 16 != 14))
+        //if((start_position % 16 != 7) && (start_position % 16 != 14))
+        if(!isEdgeRightColumn(start_position) && !isEdgeRightColumn(start_position + 9))
         {
             if(((board[start_position + 9] == '2') || (board[start_position + 9] == '4')) && (board[start_position + 18] == '0'))
             {
@@ -306,6 +333,10 @@ bool isNextJump(char board[], int start_position, int turn)
                 }
                 if((board[position]  == '2') || (board[position]  == '4'))
                 {
+                    if(isEdgeLeftColumn(position) || isEdgeRightColumn(position))
+                    {
+                        break;
+                    }
                     // oponent_piece = true;
                     position += jump_step;
                     if((position >= 0) && (position <= 63))
@@ -333,14 +364,16 @@ bool isNextJump(char board[], int start_position, int turn)
     }
     else if((turn == 1) && (board[start_position] == '2'))
     {
-        if((start_position% 16 != 1) && (start_position % 16 != 8))
+        //if((start_position% 16 != 1) && (start_position % 16 != 8))
+        if(!isEdgeLeftColumn(start_position) && !isEdgeLeftColumn(start_position - 9))
         {
             if(((board[start_position - 9] == '1') || (board[start_position - 9] == '3')) && (board[start_position - 18] == '0'))
             {
                 return true;
             }
         }
-        if((start_position % 16 != 7) && (start_position % 16 != 14))
+        //if((start_position % 16 != 7) && (start_position % 16 != 14))
+        if(!isEdgeRightColumn(start_position) && !isEdgeRightColumn(start_position - 7))
         {
             if(((board[start_position - 7] == '1') || (board[start_position - 7] == '3')) && (board[start_position - 14] == '0'))
             {
@@ -364,6 +397,10 @@ bool isNextJump(char board[], int start_position, int turn)
                 }
                 if((board[position]  == '1') || (board[position]  == '3'))
                 {
+                    if(isEdgeLeftColumn(position) || isEdgeRightColumn(position))
+                    {
+                        break;
+                    }
                     // oponent_piece = true;
                     position += jump_step;
                     if((position >= 0) && (position <= 63))
@@ -469,20 +506,20 @@ int getPosition(char row, char col)
 //TWORZENIE PLANSZY
 char *createBoard()
 {
-    char* board_3 = new char[ROWS * COLUMNS];
-    for(int row = 0; row < ROWS; row++)
-    {
-        for(int col = 0; col < COLUMNS; col++)
-        {
-            board_3[row * ROWS + col] = '0';
-        }
-    }
+    // char* board_3 = new char[ROWS * COLUMNS];
+    // for(int row = 0; row < ROWS; row++)
+    // {
+    //     for(int col = 0; col < COLUMNS; col++)
+    //     {
+    //         board_3[row * ROWS + col] = '0';
+    //     }
+    // }
 
-    board_3[14] = '3';
-    board_3[23] = '2';
-    board_3[1] = '1';
-    board_3[56] = '2';
-    return board_3;
+    // board_3[14] = '3';
+    // board_3[23] = '2';
+    // board_3[1] = '1';
+    // board_3[56] = '2';
+    // return board_3;
 
 
     // char board_2 [] = {
