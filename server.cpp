@@ -67,7 +67,7 @@ bool validStart(int turn, char startValue)
 }
 
 //LOGIKA GRY - DO PRZENIESIENIA DO INNEGO PLIKU
-pieceMove isValidPieceMoves(char board[], int start_position, int end_position, int previous_jump_end, int turn)
+pieceMove isValidPieceMove(char board[], int start_position, int end_position, int previous_jump_end, int turn)
 {
     //Zwracamy czy ruch jest poprawny i pozycje zbitego pionka 
     pieceMove result;
@@ -427,7 +427,7 @@ void *ThreadBehavior(void *client)
  
                 printf("ID GRACZA: %d;;; Wybrane pole koncowe: %d\n", (*t_client).id, end_position);
 
-                pieceMove = isValidPieceMoves((*t_client).checkers->board, start_position, end_position, previous_jump_end, (*t_client).checkers->turn);
+                pieceMove = isValidPieceMove((*t_client).checkers->board, start_position, end_position, previous_jump_end, (*t_client).checkers->turn);
                 printf("PIECE MOVE STRUCTURE: %s, %d\n", pieceMove.isValidMove ? "true" : "false", pieceMove.deletePiece);
 
                 //SPRAWDZENIE, CZY POPRAWNY RUCH
