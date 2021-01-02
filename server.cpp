@@ -47,6 +47,94 @@ struct client_info
     game *checkers;
 };
 
+struct pieceMove
+{
+    bool isValidMove;
+    int deletePiece;
+};
+
+//LOGIKA GRY - DO PRZENIESIENIA DO INNEGO PLIKU
+pieceMove isValidPieceMoves(char board[], int start_position, int end_position, int turn)
+{
+    //ZWRACAMY MOZLIWE KONCOWE POZYCJE W TABLICY JAKO INT
+    //0 - przesuniecie w lewo
+    //1 - przesuniecie w prawo
+    //2 - bicie w lewo
+    //3 - bicie w prawo
+    //4 - bylo bicie
+    pieceMove result;
+    result.isValidMove = false;
+    result.deletePiece = -1;
+
+    if(turn == 0)
+    {            
+        //PRZESUNIECIE PIONKA BEZ BICIA
+        if((start_position % 16 != 8) && (end_position == start_position + 7) && (board[end_position] == '0'))
+        {
+            //RUCH POPRAWNY w lewo
+            result.isValidMove = true;
+        }
+        if((start_position % 16 != 7) && (end_position == start_position + 9) && (board[end_position] == '0'))
+        {
+            //RUCH POPRAWNY w prawo
+            result.isValidMove = true;
+        }
+        //BICIE
+        if((start_position % 16 != 1) && (start_position % 16 != 8))
+        {
+            if((board[start_position + 7] == '2') && (end_position == start_position + 14) && (board[end_position] == '0'))
+            {
+                //JEST BICIE w lewo
+                result.deletePiece = start_position + 7;
+                result.isValidMove = true;
+            }
+        }
+        if((start_position % 16 != 7) && (start_position % 16 != 14))
+        {
+            if((board[start_position + 9] == '2') && (end_position == start_position + 18) && (board[end_position] == '0'))
+            {
+                //JEST BICIE w prawo
+                result.deletePiece = start_position + 9;
+                result.isValidMove = true;
+            }
+        }    
+    }
+    else if(turn == 1)
+    {
+        //PRZESUNIECIE PIONKA BEZ BICIA
+        if((start_position % 16 != 8) && (end_position == start_position - 9) && (board[end_position] == '0'))
+        {
+            //RUCH POPRAWNY w lewo
+            result.isValidMove = true;
+        }
+        if((start_position % 16 != 7) && (end_position == start_position - 7) && (board[end_position] == '0'))
+        {
+            //RUCH POPRAWNY w prawo
+            result.isValidMove = true;
+        }
+        //BICIE
+        if((start_position % 16 != 1) && (start_position % 16 != 8))
+        {
+            if((board[start_position - 9] == '1') && (end_position == start_position - 18) && (board[end_position] == '0'))
+            {
+                //JEST BICIE w lewo
+                result.deletePiece = start_position - 9;
+                result.isValidMove = true;
+            }
+        }
+        if((start_position % 16 != 7) && (start_position % 16 != 14))
+        {
+            if((board[start_position - 7] == '1') && (end_position == start_position - 14) && (board[end_position] == '0'))
+            {
+                //JEST BICIE w prawo
+                result.deletePiece = start_position - 7;
+                result.isValidMove = true;
+            }
+        }  
+    }
+    return result;
+}
+
 //LOGIKA GRY - DO PRZENIESIENIA DO INNEGO PLIKU
 int *pieceMoves(char board[], int start_position, int turn)
 {
@@ -442,10 +530,9 @@ void *ThreadBehavior(void *client)
     int start_position;
     int end_position;
     bool valid_move = false;
-    int *moves;
+
     bool pieceJump = false;
     bool rightStart = false;
-    bool rightEnd = false;
 
 
     bool print_turn = false;
@@ -467,6 +554,7 @@ void *ThreadBehavior(void *client)
         //JESLI GRACZ MA RUCH
         if((*t_client).checkers->turn == player)
         {  
+            pieceMove pieceMove;
             //DOPOKI RUCH NIE JEST PRAWIDLOWY
             while(valid_move == false)
             {
@@ -504,39 +592,24 @@ void *ThreadBehavior(void *client)
                     //WRACAMY DO POCZATKU PETLI - ZEBY ODCZYTAC WIADOMOSC
                     continue;
                 }
-                
-                //WYZNACZANIE MOZLIWYCH RUCHOW DLA WYBRANEJ POZYCJI STARTOWEJ
-                //jesli bylo bicie - wyznaczamy kolejne bicie
-                //jesli nie - wszystkie mozliwe moves
-                if(pieceJump == true){
-                    moves = nextJump((*t_client).checkers->board, start_position, (*t_client).checkers->turn);
-                }
-                else{
-                    moves = pieceMoves((*t_client).checkers->board, start_position, (*t_client).checkers->turn);
-                }
-                //pieceJump zmieniamy na false
+ 
                 pieceJump = false;
-                printf("ID GRACZA: %d;;; Wyznaczone mozliwe pola koncowe\n", (*t_client).id);
-                for(int i = 0; i < 4; i++)
-                {
-                    printf("%d, ", moves[i]);
-                }
-                printf("\n");
                 printf("ID GRACZA: %d;;; Wybrane pole koncowe: %d\n", (*t_client).id, end_position);
 
                 //PRZYPISUJEMY false, ZEBY TERAZ SPRAWDZIC CZY POZYCJA KONCOWA JEST PRAWIDLOWA
                 valid_move = false;
 
-                //SPRAWDZENIE, CZY POZYCJA END_POSITION POKRYWA SIE Z KTORAS Z WYZNACZONYCH
-                rightEnd = validEnd(moves, end_position);
-                if(rightEnd == true){
+                pieceMove = isValidPieceMoves((*t_client).checkers->board, start_position, end_position, (*t_client).checkers->turn);
+                printf("PIECE mOVE STRUCTURE: %s, %d\n", pieceMove.isValidMove ? "true" : "false", pieceMove.deletePiece);
+
+                //SPRAWDZENIE, CZY POPRAWNY RUCH
+                if(pieceMove.isValidMove){
                     //POZYCJA KONCOWA PRAWIDLOWA
                     valid_move = true;
                     printf("ID GRACZA: %d;;; Prawidlowa pozycja koncowa\n", (*t_client).id);
                     break;
                 }
-
-                if(valid_move == false)
+                else
                 {
                     printf("ID GRACZA: %d;;; KONIEC NIEPOPRAWNY\n", (*t_client).id);
                     write((*t_client).client_socket_descriptor, yourTurn, 10);
@@ -558,10 +631,10 @@ void *ThreadBehavior(void *client)
             //wysylamy plansze do obu graczy
             //nastepnie sprawdzamy, czy jest mozliwe kolejne bicie
             //jesli tak, wyslij wiadomosc yourTurn
-            if((end_position == moves[2]) || (end_position == moves[3]))
+            if(pieceMove.deletePiece != -1)
             {
                 printf("Wszedlem w if od bicia\n");
-                (*t_client).checkers->board = jump((*t_client).checkers->board, start_position, end_position);
+                (*t_client).checkers->board[pieceMove.deletePiece] = '0';
                 //jest bicie
                 pieceJump = true;
 
@@ -595,7 +668,7 @@ void *ThreadBehavior(void *client)
                     }
                     printf("\n");
                 }*/
-                
+                int *moves;
                 moves = nextJump((*t_client).checkers->board, end_position, (*t_client).checkers->turn);
 
                 //printf do usuniecia
