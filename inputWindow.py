@@ -9,9 +9,9 @@ class InputWindow:
         self.box = tk.Canvas(self.root, width = 400, height = 350)
         self.box.pack()
         self.entry1 = tk.Entry(self.root)
-        # self.entry1.insert(0, "127.0.0.1")
+        self.entry1.insert(0, "127.0.0.1")
         self.entry2 = tk.Entry(self.root)
-        # self.entry2.insert(0, "1234")
+        self.entry2.insert(0, "1234")
         self.validationError = tk.StringVar()
         self.window()
 
@@ -37,7 +37,6 @@ class InputWindow:
         label2 = tk.Label(self.root, text = 'PORT')
         self.box.create_window(200, 150, window = label2)
 
-        self.entry2 = tk.Entry(self.root)
         self.box.create_window(200, 190, window = self.entry2)
 
         button1 = tk.Button(text="OK", command = self.get_input, bg = 'blue', fg = 'white')
