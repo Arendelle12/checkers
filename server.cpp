@@ -67,6 +67,16 @@ bool validStart(int turn, char startValue)
     }
 }
 
+bool isEdgeLeftColumn(int position)
+{
+    return position % 16 == 8;
+}
+
+bool isEdgeRightColumn(int position)
+{
+    return position % 16 == 7;
+}
+
 //LOGIKA GRY - DO PRZENIESIENIA DO INNEGO PLIKU
 pieceMove isValidPieceMove(char board[], int start_position, int end_position, int previous_jump_end, int turn)
 {
@@ -93,12 +103,12 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
     if((turn == 0) && (board[start_position] == '1'))
     {
         //PRZESUNIECIE PIONKA BEZ BICIA
-        if((previous_jump_end == -1) && (start_position % 16 != 8) && (end_position == start_position + 7))
+        if((previous_jump_end == -1) && !isEdgeLeftColumn(start_position) && (end_position == start_position + 7))
         {
             //RUCH POPRAWNY w lewo
             result.isValidMove = true;
         }
-        if((previous_jump_end == -1) && (start_position % 16 != 7) && (end_position == start_position + 9))
+        if((previous_jump_end == -1) && !isEdgeRightColumn(start_position) && (end_position == start_position + 9))
         {
             //RUCH POPRAWNY w prawo
             result.isValidMove = true;
@@ -107,7 +117,8 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
         if ((previous_jump_end == -1) || (previous_jump_end == start_position))
         {
             //BICIE
-            if((start_position % 16 != 1) && (start_position % 16 != 8))
+            // if((start_position % 16 != 1) && (start_position % 16 != 8))
+            if (!isEdgeLeftColumn(start_position + 7))
             {
                 if((board[start_position + 7] == '2' || board[start_position + 7] == '4') && (end_position == start_position + 14))
                 {
@@ -116,7 +127,8 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
                     result.isValidMove = true;
                 }
             }
-            if((start_position % 16 != 7) && (start_position % 16 != 14))
+            // if((start_position % 16 != 7) && (start_position % 16 != 14))
+            if (!isEdgeRightColumn(start_position + 9))
             {
                 if((board[start_position + 9] == '2' || board[start_position + 9] == '4') && (end_position == start_position + 18))
                 {
@@ -175,12 +187,12 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
     else if((turn == 1) && (board[start_position] == '2'))
     {
         //PRZESUNIECIE PIONKA BEZ BICIA
-        if((previous_jump_end == -1) && (start_position % 16 != 8) && (end_position == start_position - 9))
+        if((previous_jump_end == -1) && !isEdgeLeftColumn(start_position) && (end_position == start_position - 9))
         {
             //RUCH POPRAWNY w lewo
             result.isValidMove = true;
         }
-        if((previous_jump_end == -1) && (start_position % 16 != 7) && (end_position == start_position - 7))
+        if((previous_jump_end == -1) && !isEdgeRightColumn(start_position) && (end_position == start_position - 7))
         {
             //RUCH POPRAWNY w prawo
             result.isValidMove = true;
@@ -189,7 +201,8 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
         if ((previous_jump_end == -1) || (previous_jump_end == start_position))
         {
             //BICIE
-            if((start_position % 16 != 1) && (start_position % 16 != 8))
+            // if((start_position % 16 != 1) && (start_position % 16 != 8))
+            if (!isEdgeLeftColumn(start_position - 9))
             {
                 if((board[start_position - 9] == '1' || board[start_position - 9] == '3') && (end_position == start_position - 18))
                 {
@@ -198,7 +211,8 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
                     result.isValidMove = true;
                 }
             }
-            if((start_position % 16 != 7) && (start_position % 16 != 14))
+            // if((start_position % 16 != 7) && (start_position % 16 != 14))
+            if (!isEdgeRightColumn(start_position - 7))
             {
                 if((board[start_position - 7] == '1' || board[start_position - 7] == '3') && (end_position == start_position - 14))
                 {
@@ -259,7 +273,7 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
 //wyznaczenie czy jest kolejne bicie
 bool isNextJump(char board[], int start_position, int turn)
 {
-    if(turn == 0)
+    if((turn == 0) && (board[start_position] == '1'))
     {
         if((start_position % 16 != 1) && (start_position % 16 != 8))
         {
@@ -274,9 +288,50 @@ bool isNextJump(char board[], int start_position, int turn)
             {
                 return true;
             }
-        }    
+        }
     }
-    else if(turn == 1)
+    else if((turn == 0) && (board[start_position] == '3'))
+    {
+        int jumps [4] = {7,-7,9,-9};
+        for (int i = 0; i < 4; i++)
+        {
+            int jump_step = jumps[i];
+            int position = start_position + jump_step;
+            // bool oponent_piece = false;
+            while((position >= 0) && (position <= 63))
+            {
+                if((board[position]  == '1') || (board[position]  == '3'))
+                {
+                    break;  
+                }
+                if((board[position]  == '2') || (board[position]  == '4'))
+                {
+                    // oponent_piece = true;
+                    position += jump_step;
+                    if((position >= 0) && (position <= 63))
+                    {
+                        if(board[position] == '0')
+                        {
+                            return true;
+                        }
+                    }
+                    break;
+                }
+
+                position += jump_step;
+            }
+            // position += jump_step;
+            // if((oponent_piece) && (position >= 0) && (position <= 63))
+            // {
+            //     if(board[position] == '0')
+            //     {
+            //         return true;
+            //     }
+            // }
+            
+        }
+    }
+    else if((turn == 1) && (board[start_position] == '2'))
     {
         if((start_position% 16 != 1) && (start_position % 16 != 8))
         {
@@ -291,7 +346,39 @@ bool isNextJump(char board[], int start_position, int turn)
             {
                 return true;
             }
-        }  
+        }
+    }
+    else if((turn == 1) && (board[start_position] == '4'))
+    {
+        int jumps [4] = {7,-7,9,-9};
+        for (int i = 0; i < 4; i++)
+        {
+            int jump_step = jumps[i];
+            int position = start_position + jump_step;
+            // bool oponent_piece = false;
+            while((position >= 0) && (position <= 63))
+            {
+                if((board[position]  == '2') || (board[position]  == '4'))
+                {
+                    break;  
+                }
+                if((board[position]  == '1') || (board[position]  == '3'))
+                {
+                    // oponent_piece = true;
+                    position += jump_step;
+                    if((position >= 0) && (position <= 63))
+                    {
+                        if(board[position] == '0')
+                        {
+                            return true;
+                        }
+                    }
+                    break;
+                }
+
+                position += jump_step;
+            }
+        }
     }
     return false;
 }
@@ -382,6 +469,33 @@ int getPosition(char row, char col)
 //TWORZENIE PLANSZY
 char *createBoard()
 {
+    char* board_3 = new char[ROWS * COLUMNS];
+    for(int row = 0; row < ROWS; row++)
+    {
+        for(int col = 0; col < COLUMNS; col++)
+        {
+            board_3[row * ROWS + col] = '0';
+        }
+    }
+
+    board_3[14] = '3';
+    board_3[23] = '2';
+    board_3[1] = '1';
+    board_3[56] = '2';
+    return board_3;
+
+
+    // char board_2 [] = {
+    //     '0', '2', '0', '0', '0', '0', '0', '0',
+    //     '0', '0', '0', '0', '0', '0', '3', '0',
+    //     '0', '0', '0', '0', '0', '0', '0', '2',
+    //     '0', '0', '0', '0', '0', '0', '0', '0',
+    //     '0', '0', '0', '0', '0', '0', '0', '0',
+    //     '0', '0', '0', '0', '0', '0', '0', '0',
+    //     '0', '0', '0', '0', '0', '0', '0', '0',
+    //     '1', '0', '0', '0', '0', '0', '0', '0'
+    //     };
+    // return board_2;
     char* board = new char[ROWS * COLUMNS];
     for(int row = 0; row < ROWS; row++)
     {
