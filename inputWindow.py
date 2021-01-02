@@ -31,7 +31,7 @@ class InputWindow:
         else:
             self.port = int(self.port)
             print(f"wartosci {h}, {p}")
-            self.callback(h, int(p), lambda: self.root.quit())
+            self.callback(h, int(p), lambda: self.root.destroy())
 
     def close_window(self):
         self.root.destroy()

@@ -8,7 +8,6 @@ from time import sleep
 
 #FPS = 60
 
-pygame_board = Board()
 
 def run_game(host, port, close_window):
     my_turn = False
@@ -18,6 +17,7 @@ def run_game(host, port, close_window):
         #game window
         board_2d = []
         with Network(host, port) as network:
+            pygame_board = Board()
             #narysowanie okna z plansza
             pygame_board.draw_squares()
 
