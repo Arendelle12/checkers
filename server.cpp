@@ -54,7 +54,7 @@ struct pieceMove
 };
 
 //LOGIKA GRY - DO PRZENIESIENIA DO INNEGO PLIKU
-pieceMove isValidPieceMoves(char board[], int start_position, int end_position, int turn)
+pieceMove isValidPieceMoves(char board[], int start_position, int end_position, int previous_jump_end, int turn)
 {
     //ZWRACAMY MOZLIWE KONCOWE POZYCJE W TABLICY JAKO INT
     //0 - przesuniecie w lewo
@@ -67,70 +67,79 @@ pieceMove isValidPieceMoves(char board[], int start_position, int end_position, 
     result.deletePiece = -1;
 
     if(turn == 0)
-    {            
+    {
         //PRZESUNIECIE PIONKA BEZ BICIA
-        if((start_position % 16 != 8) && (end_position == start_position + 7) && (board[end_position] == '0'))
+        if((previous_jump_end == -1) && (start_position % 16 != 8) && (end_position == start_position + 7) && (board[end_position] == '0'))
         {
             //RUCH POPRAWNY w lewo
             result.isValidMove = true;
         }
-        if((start_position % 16 != 7) && (end_position == start_position + 9) && (board[end_position] == '0'))
+        if((previous_jump_end == -1) && (start_position % 16 != 7) && (end_position == start_position + 9) && (board[end_position] == '0'))
         {
             //RUCH POPRAWNY w prawo
             result.isValidMove = true;
         }
-        //BICIE
-        if((start_position % 16 != 1) && (start_position % 16 != 8))
+
+        if ((previous_jump_end == -1) || (previous_jump_end == start_position))
         {
-            if((board[start_position + 7] == '2') && (end_position == start_position + 14) && (board[end_position] == '0'))
+            //BICIE
+            if((start_position % 16 != 1) && (start_position % 16 != 8))
             {
-                //JEST BICIE w lewo
-                result.deletePiece = start_position + 7;
-                result.isValidMove = true;
+                if((board[start_position + 7] == '2') && (end_position == start_position + 14) && (board[end_position] == '0'))
+                {
+                    //JEST BICIE w lewo
+                    result.deletePiece = start_position + 7;
+                    result.isValidMove = true;
+                }
+            }
+            if((start_position % 16 != 7) && (start_position % 16 != 14))
+            {
+                if((board[start_position + 9] == '2') && (end_position == start_position + 18) && (board[end_position] == '0'))
+                {
+                    //JEST BICIE w prawo
+                    result.deletePiece = start_position + 9;
+                    result.isValidMove = true;
+                }
             }
         }
-        if((start_position % 16 != 7) && (start_position % 16 != 14))
-        {
-            if((board[start_position + 9] == '2') && (end_position == start_position + 18) && (board[end_position] == '0'))
-            {
-                //JEST BICIE w prawo
-                result.deletePiece = start_position + 9;
-                result.isValidMove = true;
-            }
-        }    
+
     }
     else if(turn == 1)
     {
         //PRZESUNIECIE PIONKA BEZ BICIA
-        if((start_position % 16 != 8) && (end_position == start_position - 9) && (board[end_position] == '0'))
+        if((previous_jump_end == -1) && (start_position % 16 != 8) && (end_position == start_position - 9) && (board[end_position] == '0'))
         {
             //RUCH POPRAWNY w lewo
             result.isValidMove = true;
         }
-        if((start_position % 16 != 7) && (end_position == start_position - 7) && (board[end_position] == '0'))
+        if((previous_jump_end == -1) && (start_position % 16 != 7) && (end_position == start_position - 7) && (board[end_position] == '0'))
         {
             //RUCH POPRAWNY w prawo
             result.isValidMove = true;
         }
-        //BICIE
-        if((start_position % 16 != 1) && (start_position % 16 != 8))
+
+        if ((previous_jump_end == -1) || (previous_jump_end == start_position))
         {
-            if((board[start_position - 9] == '1') && (end_position == start_position - 18) && (board[end_position] == '0'))
+            //BICIE
+            if((start_position % 16 != 1) && (start_position % 16 != 8))
             {
-                //JEST BICIE w lewo
-                result.deletePiece = start_position - 9;
-                result.isValidMove = true;
+                if((board[start_position - 9] == '1') && (end_position == start_position - 18) && (board[end_position] == '0'))
+                {
+                    //JEST BICIE w lewo
+                    result.deletePiece = start_position - 9;
+                    result.isValidMove = true;
+                }
+            }
+            if((start_position % 16 != 7) && (start_position % 16 != 14))
+            {
+                if((board[start_position - 7] == '1') && (end_position == start_position - 14) && (board[end_position] == '0'))
+                {
+                    //JEST BICIE w prawo
+                    result.deletePiece = start_position - 7;
+                    result.isValidMove = true;
+                }
             }
         }
-        if((start_position % 16 != 7) && (start_position % 16 != 14))
-        {
-            if((board[start_position - 7] == '1') && (end_position == start_position - 14) && (board[end_position] == '0'))
-            {
-                //JEST BICIE w prawo
-                result.deletePiece = start_position - 7;
-                result.isValidMove = true;
-            }
-        }  
     }
     return result;
 }
@@ -234,6 +243,53 @@ char *jump(char board[], int start_position, int end_position)
     int delete_position = start_position + (end_position - start_position) / 2;
     board[delete_position] = '0';
     return board;
+}
+
+//wyznaczenie kolejnego bicia
+bool isNextJump(char board[], int start_position, int turn)
+{
+    if(turn == 0)
+    {   
+        //BICIE
+        if((start_position % 16 != 1) && (start_position % 16 != 8))
+        {
+            if((board[start_position + 7] == '2') && (board[start_position + 14] == '0'))
+            {
+                //JEST BICIE
+                return true;
+            }
+        }
+        if((start_position % 16 != 7) && (start_position % 16 != 14))
+        {
+            if((board[start_position + 9] == '2') && (board[start_position + 18] == '0'))
+            {
+                //JEST BICIE
+                return true;
+            }
+        }    
+    }
+    else if(turn == 1)
+    {
+        //BICIE
+        if((start_position% 16 != 1) && (start_position % 16 != 8))
+        {
+            if((board[start_position - 9] == '1') && (board[start_position - 18] == '0'))
+            {
+                //JEST BICIE
+                return true;
+            }
+        }
+        if((start_position % 16 != 7) && (start_position % 16 != 14))
+        {
+            if((board[start_position - 7] == '1') && (board[start_position - 14] == '0'))
+            {
+                //JEST BICIE
+                return true;
+            }
+        }  
+    }
+    
+    return false;
 }
 
 //wyznaczenie kolejnego bicia
@@ -532,6 +588,7 @@ void *ThreadBehavior(void *client)
     bool valid_move = false;
 
     bool pieceJump = false;
+    int previous_jump_end = -1;
     bool rightStart = false;
 
 
@@ -599,13 +656,14 @@ void *ThreadBehavior(void *client)
                 //PRZYPISUJEMY false, ZEBY TERAZ SPRAWDZIC CZY POZYCJA KONCOWA JEST PRAWIDLOWA
                 valid_move = false;
 
-                pieceMove = isValidPieceMoves((*t_client).checkers->board, start_position, end_position, (*t_client).checkers->turn);
+                pieceMove = isValidPieceMoves((*t_client).checkers->board, start_position, end_position, previous_jump_end, (*t_client).checkers->turn);
                 printf("PIECE mOVE STRUCTURE: %s, %d\n", pieceMove.isValidMove ? "true" : "false", pieceMove.deletePiece);
 
                 //SPRAWDZENIE, CZY POPRAWNY RUCH
                 if(pieceMove.isValidMove){
                     //POZYCJA KONCOWA PRAWIDLOWA
                     valid_move = true;
+                    previous_jump_end = -1;
                     printf("ID GRACZA: %d;;; Prawidlowa pozycja koncowa\n", (*t_client).id);
                     break;
                 }
@@ -668,8 +726,8 @@ void *ThreadBehavior(void *client)
                     }
                     printf("\n");
                 }*/
-                int *moves;
-                moves = nextJump((*t_client).checkers->board, end_position, (*t_client).checkers->turn);
+                // int *moves;
+                // moves = nextJump((*t_client).checkers->board, end_position, (*t_client).checkers->turn);
 
                 //printf do usuniecia
                 /*
@@ -682,8 +740,9 @@ void *ThreadBehavior(void *client)
                 */
 
 
-                if(moves[4] == 1)
+                if(isNextJump((*t_client).checkers->board, end_position, (*t_client).checkers->turn))
                 {
+                    previous_jump_end = end_position;
                     write((*t_client).client_socket_descriptor, yourTurn, 10);
                 }
                 else
