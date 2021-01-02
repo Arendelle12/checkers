@@ -290,17 +290,13 @@ char *createBoard()
     {
         for(int col = 0; col < COLUMNS; col++)
         {
+            board[row * ROWS + col] = '0';
             if(row < 3)
             {
                 if((row%2 == 0 && col%2 == 1) || (row%2 == 1 && col%2 == 0))
                 {
                     board[row * ROWS + col] = '1';
                 }
-                else
-                {
-                    board[row * ROWS + col] = '0';
-                }
-                
             }
             else if(row > 4)
             {
@@ -308,16 +304,7 @@ char *createBoard()
                 {
                     board[row * ROWS + col] = '2';
                 }
-                else
-                {
-                    board[row * ROWS + col] = '0';
-                }
             }
-            else
-            {
-                board[row * ROWS + col] = '0';
-            }
-            
         }
     }
     /*printf("Inside function\n");
