@@ -56,12 +56,7 @@ struct pieceMove
 //LOGIKA GRY - DO PRZENIESIENIA DO INNEGO PLIKU
 pieceMove isValidPieceMoves(char board[], int start_position, int end_position, int previous_jump_end, int turn)
 {
-    //ZWRACAMY MOZLIWE KONCOWE POZYCJE W TABLICY JAKO INT
-    //0 - przesuniecie w lewo
-    //1 - przesuniecie w prawo
-    //2 - bicie w lewo
-    //3 - bicie w prawo
-    //4 - bylo bicie
+    //Zwracamy czy ruch jest poprawny i pozycje zbitego pionka 
     pieceMove result;
     result.isValidMove = false;
     result.deletePiece = -1;
@@ -144,118 +139,15 @@ pieceMove isValidPieceMoves(char board[], int start_position, int end_position, 
     return result;
 }
 
-//LOGIKA GRY - DO PRZENIESIENIA DO INNEGO PLIKU
-int *pieceMoves(char board[], int start_position, int turn)
-{
-    //ZWRACAMY MOZLIWE KONCOWE POZYCJE W TABLICY JAKO INT
-    //0 - przesuniecie w lewo
-    //1 - przesuniecie w prawo
-    //2 - bicie w lewo
-    //3 - bicie w prawo
-    //4 - bylo bicie
-    int* buf = new int [5];
-    for(int i = 0; i < 5; i++)
-    {
-        buf[i] = -1;
-    }
-
-    if(turn == 0)
-    {            
-        //PRZESUNIECIE PIONKA BEZ BICIA
-        if((start_position % 16 != 8) && (board[start_position + 7] == '0'))
-        {
-            //RUCH POPRAWNY w lewo
-            buf[0] = start_position + 7;
-        }
-        if((start_position % 16 != 7) && (board[start_position + 9] == '0'))
-        {
-            //RUCH POPRAWNY w prawo
-            buf[1] = start_position + 9;
-        }
-        //BICIE
-        if((start_position % 16 != 1) && (start_position % 16 != 8))
-        {
-            if((board[start_position + 7] == '2') && (board[start_position + 14] == '0'))
-            {
-                //JEST BICIE w lewo
-                buf[2] = start_position + 14;
-                buf[4] = 1;
-            }
-        }
-        if((start_position % 16 != 7) && (start_position % 16 != 14))
-        {
-            if((board[start_position + 9] == '2') && (board[start_position + 18] == '0'))
-            {
-                //JEST BICIE w prawo
-                buf[3] = start_position + 18;
-                buf[4] = 1;
-            }
-        }    
-    }
-    else if(turn == 1)
-    {
-        //PRZESUNIECIE PIONKA BEZ BICIA
-        if((start_position % 16 != 8) && (board[start_position - 9] == '0'))
-        {
-            //RUCH POPRAWNY w lewo
-            buf[0] = start_position - 9;
-        }
-        if((start_position % 16 != 7) && (board[start_position - 7] == '0'))
-        {
-            //RUCH POPRAWNY w prawo
-            buf[1] = start_position - 7;
-        }
-        //BICIE
-        if((start_position % 16 != 1) && (start_position % 16 != 8))
-        {
-            if((board[start_position - 9] == '1') && (board[start_position - 18] == '0'))
-            {
-                //JEST BICIE w lewo
-                buf[2] = start_position - 18;
-                buf[4] = 1;
-            }
-        }
-        if((start_position % 16 != 7) && (start_position % 16 != 14))
-        {
-            if((board[start_position - 7] == '1') && (board[start_position - 14] == '0'))
-            {
-                //JEST BICIE w prawo
-                buf[3] = start_position - 14;
-                buf[4] = 1;
-            }
-        }  
-    }
-    /*
-    printf("Wyznaczone moves w funkcji\n");
-    for(int i = 0; i < 2; i++)
-    {
-        printf("%d, ", buf[i]);
-    }
-    printf("\n\n");
-    */
-    return buf;
-}
-
-//tak zwane bicie xD
-//usuniecie pionka z wyznaczonej pozycji
-char *jump(char board[], int start_position, int end_position)
-{
-    int delete_position = start_position + (end_position - start_position) / 2;
-    board[delete_position] = '0';
-    return board;
-}
-
-//wyznaczenie kolejnego bicia
+//wyznaczenie czy jest kolejne bicie
 bool isNextJump(char board[], int start_position, int turn)
 {
     if(turn == 0)
-    {   
-        //BICIE
+    {
         if((start_position % 16 != 1) && (start_position % 16 != 8))
         {
             if((board[start_position + 7] == '2') && (board[start_position + 14] == '0'))
             {
-                //JEST BICIE
                 return true;
             }
         }
@@ -263,19 +155,16 @@ bool isNextJump(char board[], int start_position, int turn)
         {
             if((board[start_position + 9] == '2') && (board[start_position + 18] == '0'))
             {
-                //JEST BICIE
                 return true;
             }
         }    
     }
     else if(turn == 1)
     {
-        //BICIE
         if((start_position% 16 != 1) && (start_position % 16 != 8))
         {
             if((board[start_position - 9] == '1') && (board[start_position - 18] == '0'))
             {
-                //JEST BICIE
                 return true;
             }
         }
@@ -283,98 +172,11 @@ bool isNextJump(char board[], int start_position, int turn)
         {
             if((board[start_position - 7] == '1') && (board[start_position - 14] == '0'))
             {
-                //JEST BICIE
                 return true;
             }
         }  
     }
-    
     return false;
-}
-
-//wyznaczenie kolejnego bicia
-int *nextJump(char board[], int start_position, int turn)
-{
-    //pierwsze dwa pola sie nie zmieniaja - potrzebne do dzialania kodu
-    //5 pozycja nas informuje, czy bylo bicie: -1 nie bylo, 1 bylo
-    
-    //printf("Debug funkcji kolejneBicie\n");
-    int* buf = new int [5];
-    for(int i = 0; i < 5; i++)
-    {
-        buf[i] = -1;
-    }
-    /*
-    for(int i = 0; i < 5; i++)
-    {
-        printf("Buf[%d] = %d\n", i, buf[i]);
-    }
-    printf("Tura w funkcji: %d\n", tura);
-
-    printf("\n plansza w funkcji: \n");
-    for(int i = 0; i < 8; i++){
-        for(int j = 0; j < 8; j++){ 
-            printf("%d ",plansza[i*8+j]-'0');
-        }
-        printf("\n");
-    }
-
-    printf("Pozycja startowa w funkcji: %d\n", pozycjaStartowa);
-    */
-
-    if(turn == 0)
-    {   
-        //BICIE
-        if((start_position % 16 != 1) && (start_position % 16 != 8))
-        {
-            if((board[start_position + 7] == '2') && (board[start_position + 14] == '0'))
-            {
-                //JEST BICIE
-                buf[2] = start_position + 14;
-                buf[4] = 1;
-            }
-        }
-        if((start_position % 16 != 7) && (start_position % 16 != 14))
-        {
-            if((board[start_position + 9] == '2') && (board[start_position + 18] == '0'))
-            {
-                //JEST BICIE
-                buf[3] = start_position + 18;
-                buf[4] = 1;
-            }
-        }    
-    }
-    else if(turn == 1)
-    {
-        //BICIE
-        if((start_position% 16 != 1) && (start_position % 16 != 8))
-        {
-            if((board[start_position - 9] == '1') && (board[start_position - 18] == '0'))
-            {
-                //JEST BICIE
-                buf[2] = start_position - 18;
-                buf[4] = 1;
-            }
-        }
-        if((start_position % 16 != 7) && (start_position % 16 != 14))
-        {
-            if((board[start_position - 7] == '1') && (board[start_position - 14] == '0'))
-            {
-                //JEST BICIE
-                buf[3] = start_position - 14;
-                buf[4] = 1;
-            }
-        }  
-    }
-    /*   
-    printf("Wyznaczone bicia w funkcji\n");
-    for(int i = 0; i < 5; i++)
-    {
-        printf("%d, ", buf[i]);
-    }
-    printf("\n\n");*/
-    
-    return buf;
 }
 
 bool validStart(int turn, char startValue)
@@ -388,7 +190,6 @@ bool validStart(int turn, char startValue)
     else{
         return false;
     }
-    
 }
 
 bool validEnd(int moves[], int endPosition)
@@ -587,7 +388,6 @@ void *ThreadBehavior(void *client)
     int end_position;
     bool valid_move = false;
 
-    bool pieceJump = false;
     int previous_jump_end = -1;
     bool rightStart = false;
 
@@ -650,7 +450,6 @@ void *ThreadBehavior(void *client)
                     continue;
                 }
  
-                pieceJump = false;
                 printf("ID GRACZA: %d;;; Wybrane pole koncowe: %d\n", (*t_client).id, end_position);
 
                 //PRZYPISUJEMY false, ZEBY TERAZ SPRAWDZIC CZY POZYCJA KONCOWA JEST PRAWIDLOWA
@@ -694,7 +493,6 @@ void *ThreadBehavior(void *client)
                 printf("Wszedlem w if od bicia\n");
                 (*t_client).checkers->board[pieceMove.deletePiece] = '0';
                 //jest bicie
-                pieceJump = true;
 
                 //zmieniamy liczbe pionkow po biciu
                 if((*t_client).checkers->turn == 0){
@@ -747,8 +545,6 @@ void *ThreadBehavior(void *client)
                 }
                 else
                 {
-                    //przed zmiana tury zmiana pieceJump
-                    pieceJump = false;
                     //zmieniamy ture
                     pthread_mutex_lock((*t_client).game_mutex);
                     (*t_client).checkers->turn = changeTurn((*t_client).checkers->turn);
