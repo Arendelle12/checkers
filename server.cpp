@@ -53,6 +53,19 @@ struct pieceMove
     int deletePiece;
 };
 
+bool validStart(int turn, char startValue)
+{
+    if((turn == 0) && (startValue == '1')){
+        return true;
+    }
+    else if((turn == 1) && (startValue == '2')){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
 //LOGIKA GRY - DO PRZENIESIENIA DO INNEGO PLIKU
 pieceMove isValidPieceMoves(char board[], int start_position, int end_position, int previous_jump_end, int turn)
 {
@@ -60,6 +73,11 @@ pieceMove isValidPieceMoves(char board[], int start_position, int end_position, 
     pieceMove result;
     result.isValidMove = false;
     result.deletePiece = -1;
+
+    if(!validStart(turn, board[start_position]))
+    {
+        return result;
+    }
 
     if(turn == 0)
     {
@@ -175,32 +193,6 @@ bool isNextJump(char board[], int start_position, int turn)
                 return true;
             }
         }  
-    }
-    return false;
-}
-
-bool validStart(int turn, char startValue)
-{
-    if((turn == 0) && (startValue == '1')){
-        return true;
-    }
-    else if((turn == 1) && (startValue == '2')){
-        return true;
-    }
-    else{
-        return false;
-    }
-}
-
-bool validEnd(int moves[], int endPosition)
-{
-    for(int i = 0; i < 4; i++)
-    {
-        if(endPosition == moves[i])
-        {
-            return true;
-            break;
-        }
     }
     return false;
 }
@@ -388,8 +380,6 @@ void *ThreadBehavior(void *client)
     int end_position;
 
     int previous_jump_end = -1;
-    bool rightStart = false;
-
 
     bool print_turn = false;
 
@@ -434,24 +424,11 @@ void *ThreadBehavior(void *client)
                 start_position = getPosition(tab[0], tab[1]);
                 end_position = getPosition(tab[2], tab[3]);
                 printf("ID GRACZA: %d;;; start: %d, end: %d\n", (*t_client).id, start_position, end_position);
-
-                //sprawdzenie, czy gracz nacisnal wlasciwy pionek
-                rightStart = validStart((*t_client).checkers->turn, (*t_client).checkers->board[start_position]);
-
-                if(rightStart == true){
-                    printf("ID GRACZA: %d;;; poprawny start\n", (*t_client).id);
-                }
-                else{
-                    printf("ID GRACZA: %d;;; START NIEPOPRAWNY\n", (*t_client).id);
-                    write((*t_client).client_socket_descriptor, yourTurn, 10);
-                    //WRACAMY DO POCZATKU PETLI - ZEBY ODCZYTAC WIADOMOSC
-                    continue;
-                }
  
                 printf("ID GRACZA: %d;;; Wybrane pole koncowe: %d\n", (*t_client).id, end_position);
 
                 pieceMove = isValidPieceMoves((*t_client).checkers->board, start_position, end_position, previous_jump_end, (*t_client).checkers->turn);
-                printf("PIECE mOVE STRUCTURE: %s, %d\n", pieceMove.isValidMove ? "true" : "false", pieceMove.deletePiece);
+                printf("PIECE MOVE STRUCTURE: %s, %d\n", pieceMove.isValidMove ? "true" : "false", pieceMove.deletePiece);
 
                 //SPRAWDZENIE, CZY POPRAWNY RUCH
                 if(pieceMove.isValidMove){
