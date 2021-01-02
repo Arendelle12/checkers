@@ -19,13 +19,14 @@ using namespace std;
 
 //TODO
 /*
-- czekanie na 2 gracza
 - adresy nie wbite na stale
 - wykrywanie konca gry
 - damki
 - fragmentacja
-- uporzadkowanie kodu : po angielsku, osobny plik na gre (?)
+- uporzadkowanie kodu : osobny plik na gre (?)
 */
+
+//SPRAWDZANIE CZY DAMKA MA BICIE
 
 struct game
 {
@@ -55,10 +56,10 @@ struct pieceMove
 
 bool validStart(int turn, char startValue)
 {
-    if((turn == 0) && (startValue == '1')){
+    if((turn == 0) && (startValue == '1' || startValue == '3')){
         return true;
     }
-    else if((turn == 1) && (startValue == '2')){
+    else if((turn == 1) && (startValue == '2' || startValue == '4')){
         return true;
     }
     else{
@@ -79,15 +80,25 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
         return result;
     }
 
-    if(turn == 0)
+    if (start_position == end_position)
+    {
+        return result;
+    }
+
+    if (board[end_position] != '0')
+    {
+        return result;
+    }
+
+    if((turn == 0) && (board[start_position] == '1'))
     {
         //PRZESUNIECIE PIONKA BEZ BICIA
-        if((previous_jump_end == -1) && (start_position % 16 != 8) && (end_position == start_position + 7) && (board[end_position] == '0'))
+        if((previous_jump_end == -1) && (start_position % 16 != 8) && (end_position == start_position + 7))
         {
             //RUCH POPRAWNY w lewo
             result.isValidMove = true;
         }
-        if((previous_jump_end == -1) && (start_position % 16 != 7) && (end_position == start_position + 9) && (board[end_position] == '0'))
+        if((previous_jump_end == -1) && (start_position % 16 != 7) && (end_position == start_position + 9))
         {
             //RUCH POPRAWNY w prawo
             result.isValidMove = true;
@@ -98,7 +109,7 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
             //BICIE
             if((start_position % 16 != 1) && (start_position % 16 != 8))
             {
-                if((board[start_position + 7] == '2') && (end_position == start_position + 14) && (board[end_position] == '0'))
+                if((board[start_position + 7] == '2' || board[start_position + 7] == '4') && (end_position == start_position + 14))
                 {
                     //JEST BICIE w lewo
                     result.deletePiece = start_position + 7;
@@ -107,7 +118,7 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
             }
             if((start_position % 16 != 7) && (start_position % 16 != 14))
             {
-                if((board[start_position + 9] == '2') && (end_position == start_position + 18) && (board[end_position] == '0'))
+                if((board[start_position + 9] == '2' || board[start_position + 9] == '4') && (end_position == start_position + 18))
                 {
                     //JEST BICIE w prawo
                     result.deletePiece = start_position + 9;
@@ -117,15 +128,59 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
         }
 
     }
-    else if(turn == 1)
+    else if((turn == 0) && (board[start_position] == '3'))
+    {
+        int jump_value = 0;
+        if((end_position - start_position) % 7 == 0)
+        {
+            jump_value = 7;
+        }
+        else if((end_position - start_position) % 9 == 0)
+        {
+            jump_value = 9;
+        }
+        else
+        {
+            return result;
+        }
+
+        if (start_position > end_position)
+        {
+            jump_value = -1 * jump_value;
+        }
+        bool oponent_piece = false;
+        int delete_position = -1;
+        int position_to_check = start_position + jump_value;
+        while (position_to_check != end_position)
+        {
+            if((board[position_to_check] == '1') || (board[position_to_check] == '3'))
+            {
+                return result;
+            }
+            if((board[position_to_check] == '2') || (board[position_to_check] == '4'))
+            {
+                if(oponent_piece)
+                {
+                    return result;
+                }
+                oponent_piece = true;
+                delete_position = position_to_check;
+            }
+
+            position_to_check += jump_value;
+        }
+        result.deletePiece = delete_position;
+        result.isValidMove = true;
+    }
+    else if((turn == 1) && (board[start_position] == '2'))
     {
         //PRZESUNIECIE PIONKA BEZ BICIA
-        if((previous_jump_end == -1) && (start_position % 16 != 8) && (end_position == start_position - 9) && (board[end_position] == '0'))
+        if((previous_jump_end == -1) && (start_position % 16 != 8) && (end_position == start_position - 9))
         {
             //RUCH POPRAWNY w lewo
             result.isValidMove = true;
         }
-        if((previous_jump_end == -1) && (start_position % 16 != 7) && (end_position == start_position - 7) && (board[end_position] == '0'))
+        if((previous_jump_end == -1) && (start_position % 16 != 7) && (end_position == start_position - 7))
         {
             //RUCH POPRAWNY w prawo
             result.isValidMove = true;
@@ -136,7 +191,7 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
             //BICIE
             if((start_position % 16 != 1) && (start_position % 16 != 8))
             {
-                if((board[start_position - 9] == '1') && (end_position == start_position - 18) && (board[end_position] == '0'))
+                if((board[start_position - 9] == '1' || board[start_position - 9] == '3') && (end_position == start_position - 18))
                 {
                     //JEST BICIE w lewo
                     result.deletePiece = start_position - 9;
@@ -145,7 +200,7 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
             }
             if((start_position % 16 != 7) && (start_position % 16 != 14))
             {
-                if((board[start_position - 7] == '1') && (end_position == start_position - 14) && (board[end_position] == '0'))
+                if((board[start_position - 7] == '1' || board[start_position - 7] == '3') && (end_position == start_position - 14))
                 {
                     //JEST BICIE w prawo
                     result.deletePiece = start_position - 7;
@@ -153,6 +208,50 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
                 }
             }
         }
+    }
+    else if((turn == 1) && (board[start_position] == '4'))
+    {
+        int jump_value = 0;
+        if((end_position - start_position) % 7 == 0)
+        {
+            jump_value = 7;
+        }
+        else if((end_position - start_position) % 9 == 0)
+        {
+            jump_value = 9;
+        }
+        else
+        {
+            return result;
+        }
+
+        if (start_position > end_position)
+        {
+            jump_value = -1 * jump_value;
+        }
+        bool oponent_piece = false;
+        int delete_position = -1;
+        int position_to_check = start_position + jump_value;
+        while (position_to_check != end_position)
+        {
+            if((board[position_to_check] == '2') || (board[position_to_check] == '4'))
+            {
+                return result;
+            }
+            if((board[position_to_check] == '1') || (board[position_to_check] == '3'))
+            {
+                if(oponent_piece)
+                {
+                    return result;
+                }
+                oponent_piece = true;
+                delete_position = position_to_check;
+            }
+
+            position_to_check += jump_value;
+        }
+        result.deletePiece = delete_position;
+        result.isValidMove = true;
     }
     return result;
 }
@@ -164,14 +263,14 @@ bool isNextJump(char board[], int start_position, int turn)
     {
         if((start_position % 16 != 1) && (start_position % 16 != 8))
         {
-            if((board[start_position + 7] == '2') && (board[start_position + 14] == '0'))
+            if(((board[start_position + 7] == '2') || (board[start_position + 7] == '4')) && (board[start_position + 14] == '0'))
             {
                 return true;
             }
         }
         if((start_position % 16 != 7) && (start_position % 16 != 14))
         {
-            if((board[start_position + 9] == '2') && (board[start_position + 18] == '0'))
+            if(((board[start_position + 9] == '2') || (board[start_position + 9] == '4')) && (board[start_position + 18] == '0'))
             {
                 return true;
             }
@@ -181,14 +280,14 @@ bool isNextJump(char board[], int start_position, int turn)
     {
         if((start_position% 16 != 1) && (start_position % 16 != 8))
         {
-            if((board[start_position - 9] == '1') && (board[start_position - 18] == '0'))
+            if(((board[start_position - 9] == '1') || (board[start_position - 9] == '3')) && (board[start_position - 18] == '0'))
             {
                 return true;
             }
         }
         if((start_position % 16 != 7) && (start_position % 16 != 14))
         {
-            if((board[start_position - 7] == '1') && (board[start_position - 14] == '0'))
+            if(((board[start_position - 7] == '1') || (board[start_position - 7] == '3')) && (board[start_position - 14] == '0'))
             {
                 return true;
             }
@@ -264,14 +363,12 @@ int changeTurn(int turn)
 {
     if(turn == 0)
     {
-        turn = 1;
+        return 1;
     }
     else
     {
-        turn = 0;    
+        return 0;
     }
-
-    return turn;    
 }
 
 int getPosition(char row, char col)
@@ -307,14 +404,6 @@ char *createBoard()
             }
         }
     }
-    /*printf("Inside function\n");
-    for(int i = 0; i < ROWS; i ++){
-        for(int j = 0; j < COLUMNS; j++)
-        {
-            printf("%d, ", board[i * ROWS + j]);
-        }
-        printf("\n");
-    }*/
     return board;
 }
 
@@ -490,7 +579,6 @@ void *ThreadBehavior(void *client)
                 printf("\n");
                 */
 
-
                 if(isNextJump((*t_client).checkers->board, end_position, (*t_client).checkers->turn))
                 {
                     previous_jump_end = end_position;
@@ -532,9 +620,6 @@ void *ThreadBehavior(void *client)
                 write(*(*t_client).second_player_fd, yourTurn, 10);
             }
 
-            
-
-        
             //read = read((*t_client).client_socket_descriptor, tab, sizeof(tab)-1);
             /*if (n == -1){
                 printf("Read error occures\n");
@@ -546,12 +631,9 @@ void *ThreadBehavior(void *client)
                 close((*t_client).client_socket_descriptor);
                 free(t_client);
             }*/
-
-
         }
 
         print_turn = false;
-
     }
     sleep(5);
 
@@ -573,7 +655,6 @@ void handleConnection(struct client_info *client)
         printf("Thread creation failed, error code: %d\n", create_result);
         exit(-1);
     }
-
 }
 
 int main(){
@@ -611,8 +692,6 @@ int main(){
         game_mutex[i] = PTHREAD_MUTEX_INITIALIZER;
     }
 
-
-
     //inicjalizacja gniazda serwera
     memset(&server_address, 0, sizeof(server_address));
     server_address.sin_family = AF_INET;
@@ -635,7 +714,7 @@ int main(){
         printf("Setsockopt failed\n");
         exit(1);
     }
-    
+
     //bind - dowiazanie nazwy do socketu
     bind_result = bind(server_socket_descriptor, (const struct sockaddr *)&server_address, sizeof(server_address));
     if(bind_result < 0)
@@ -701,9 +780,6 @@ int main(){
             printf("Nie mozna polaczyc klienta\n");
             close(connection_socket_descriptor);
         }
-
-        
-
 
         struct client_info *client = (client_info *)malloc(sizeof(struct client_info));
         (*client).client_socket_descriptor = connection_socket_descriptor;
