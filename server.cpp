@@ -790,6 +790,8 @@ int main(int argc, char* argv[]){
 
     if(argc != 2)
     {
+        printf("Sposob uzycia: make run_server port=numer_portu\n");
+        printf("LUB\n");
         printf("Sposob uzycia: ./server numer_portu\n");
         exit(1);
     }
