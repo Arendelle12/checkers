@@ -39,6 +39,8 @@ def run_game(host, port):
             #clock.tick(FPS)
             # rec_str = network.recv(64)
             rec_str = network.readline()
+            # print(rec_str)
+            # print("Length: ", len(rec_str))
 
             """
             if(run == True):
@@ -50,10 +52,17 @@ def run_game(host, port):
                 pygame.quit() 
             """      
 
-            if(rec_str == "Twoj ruch\x00"):
+            if(rec_str == "Your turn\x00"):
                 my_turn = True
                 print("TRUE: ", rec_str)
-            
+            elif(rec_str == "You win\x00"):
+                print("You win!!!")
+                pygame_board.show_text("You win!")
+                sleep(5)
+            elif(rec_str == "You lose\x00"):
+                print("You lose!!!")
+                pygame_board.show_text("You lose")
+                sleep(5)
             else:
                 print("Otrzymano wiadomosc: ")
                 board_2d = convert_board(rec_str)

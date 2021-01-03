@@ -546,7 +546,7 @@ void *ThreadBehavior(void *client)
     int my_id = (*t_client).id;
     printf("My id: %d\n", my_id);
 
-    char yourTurn[10] = "Twoj ruch";
+    char yourTurn[10] = "Your turn";
     char win[8] = "You win";
     char lose[9] = "You lose";
     
@@ -681,19 +681,23 @@ void *ThreadBehavior(void *client)
                     pthread_mutex_lock((*t_client).game_mutex);
                     (*t_client).checkers->second_player_pieces--;
                     printf("ID gracza: %d, liczba pionkow przeciwnika: %d\n", (*t_client).id, (*t_client).checkers->second_player_pieces);
-                    pthread_mutex_unlock((*t_client).game_mutex);
                     if((*t_client).checkers->second_player_pieces == 0){
-                        printf("\n!!!KONIEC GRY!!!\n");
+                        send((*t_client).client_socket_descriptor, win, 8);
+                        send(*(*t_client).second_player_fd, lose, 9);
+                        printf("\n!!!Wygral pierwszy gracz!!!\n");
                     }
+                    pthread_mutex_unlock((*t_client).game_mutex);
                 }
                 else{
                     pthread_mutex_lock((*t_client).game_mutex);
                     (*t_client).checkers->first_player_pieces--;
                     printf("ID gracza: %d, liczba pionkow przeciwnika: %d\n", (*t_client).id, (*t_client).checkers->first_player_pieces);
-                    pthread_mutex_unlock((*t_client).game_mutex);
                     if((*t_client).checkers->first_player_pieces == 0){
-                        printf("\n!!!KONIEC GRY!!!\n");
+                        send((*t_client).client_socket_descriptor, lose, 9);
+                        send(*(*t_client).second_player_fd, win, 8);
+                        printf("\n!!!Wygral drugi gracz!!!\n");
                     }
+                    pthread_mutex_unlock((*t_client).game_mutex);
                 }
 
                 send((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);

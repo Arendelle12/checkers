@@ -27,9 +27,7 @@ class Network:
         while(True):
             data = self.client.recv(1)
             value = data.decode()
-            # print(value)
             if value == "\n":
-                print('NOWA LINIA')
                 return text
             else:
                 text = text + value
