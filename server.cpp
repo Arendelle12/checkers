@@ -19,10 +19,7 @@ using namespace std;
 
 //TODO
 /*
-- adresy nie wbite na stale
-- wykrywanie konca gry
 - damki
-- fragmentacja
 - uporzadkowanie kodu : osobny plik na gre (?)
 */
 
@@ -32,8 +29,6 @@ struct game
 {
     char *board;
     int turn;
-    int first_player_pieces;
-    int second_player_pieces;
 };
 
 struct client_info
@@ -117,7 +112,6 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
         if ((previous_jump_end == -1) || (previous_jump_end == start_position))
         {
             //BICIE
-            // if((start_position % 16 != 1) && (start_position % 16 != 8))
             if (!isEdgeLeftColumn(start_position + 7))
             {
                 if((board[start_position + 7] == '2' || board[start_position + 7] == '4') && (end_position == start_position + 14))
@@ -127,7 +121,6 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
                     result.isValidMove = true;
                 }
             }
-            // if((start_position % 16 != 7) && (start_position % 16 != 14))
             if (!isEdgeRightColumn(start_position + 9))
             {
                 if((board[start_position + 9] == '2' || board[start_position + 9] == '4') && (end_position == start_position + 18))
@@ -162,7 +155,6 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
         bool oponent_piece = false;
         int delete_position = -1;
         int position_to_check = start_position + jump_value;
-        //int start_column = getColumnFromPosition(start_position);
         while (position_to_check != end_position)
         {
             if((board[position_to_check] == '0') && ((isEdgeLeftColumn(position_to_check)) || (isEdgeRightColumn(position_to_check))))
@@ -191,7 +183,6 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
                     delete_position = position_to_check;
                 }
             }
-
             position_to_check += jump_value;
         }
         result.deletePiece = delete_position;
@@ -214,7 +205,6 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
         if ((previous_jump_end == -1) || (previous_jump_end == start_position))
         {
             //BICIE
-            // if((start_position % 16 != 1) && (start_position % 16 != 8))
             if (!isEdgeLeftColumn(start_position - 9))
             {
                 if((board[start_position - 9] == '1' || board[start_position - 9] == '3') && (end_position == start_position - 18))
@@ -224,7 +214,6 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
                     result.isValidMove = true;
                 }
             }
-            // if((start_position % 16 != 7) && (start_position % 16 != 14))
             if (!isEdgeRightColumn(start_position - 7))
             {
                 if((board[start_position - 7] == '1' || board[start_position - 7] == '3') && (end_position == start_position - 14))
@@ -286,7 +275,6 @@ pieceMove isValidPieceMove(char board[], int start_position, int end_position, i
                     delete_position = position_to_check;
                 } 
             }
-
             position_to_check += jump_value;
         }
         result.deletePiece = delete_position;
@@ -300,7 +288,6 @@ bool isNextJump(char board[], int start_position, int turn)
 {
     if((turn == 0) && (board[start_position] == '1'))
     {
-        //if((start_position % 16 != 1) && (start_position % 16 != 8))
         if(!isEdgeLeftColumn(start_position) && !isEdgeLeftColumn(start_position + 7))
         {
             if(((board[start_position + 7] == '2') || (board[start_position + 7] == '4')) && (board[start_position + 14] == '0'))
@@ -308,7 +295,6 @@ bool isNextJump(char board[], int start_position, int turn)
                 return true;
             }
         }
-        //if((start_position % 16 != 7) && (start_position % 16 != 14))
         if(!isEdgeRightColumn(start_position) && !isEdgeRightColumn(start_position + 9))
         {
             if(((board[start_position + 9] == '2') || (board[start_position + 9] == '4')) && (board[start_position + 18] == '0'))
@@ -324,7 +310,6 @@ bool isNextJump(char board[], int start_position, int turn)
         {
             int jump_step = jumps[i];
             int position = start_position + jump_step;
-            // bool oponent_piece = false;
             while((position >= 0) && (position <= 63))
             {
                 if((board[position]  == '1') || (board[position]  == '3'))
@@ -337,7 +322,6 @@ bool isNextJump(char board[], int start_position, int turn)
                     {
                         break;
                     }
-                    // oponent_piece = true;
                     position += jump_step;
                     if((position >= 0) && (position <= 63))
                     {
@@ -348,23 +332,12 @@ bool isNextJump(char board[], int start_position, int turn)
                     }
                     break;
                 }
-
                 position += jump_step;
             }
-            // position += jump_step;
-            // if((oponent_piece) && (position >= 0) && (position <= 63))
-            // {
-            //     if(board[position] == '0')
-            //     {
-            //         return true;
-            //     }
-            // }
-            
         }
     }
     else if((turn == 1) && (board[start_position] == '2'))
     {
-        //if((start_position% 16 != 1) && (start_position % 16 != 8))
         if(!isEdgeLeftColumn(start_position) && !isEdgeLeftColumn(start_position - 9))
         {
             if(((board[start_position - 9] == '1') || (board[start_position - 9] == '3')) && (board[start_position - 18] == '0'))
@@ -372,7 +345,6 @@ bool isNextJump(char board[], int start_position, int turn)
                 return true;
             }
         }
-        //if((start_position % 16 != 7) && (start_position % 16 != 14))
         if(!isEdgeRightColumn(start_position) && !isEdgeRightColumn(start_position - 7))
         {
             if(((board[start_position - 7] == '1') || (board[start_position - 7] == '3')) && (board[start_position - 14] == '0'))
@@ -388,7 +360,6 @@ bool isNextJump(char board[], int start_position, int turn)
         {
             int jump_step = jumps[i];
             int position = start_position + jump_step;
-            // bool oponent_piece = false;
             while((position >= 0) && (position <= 63))
             {
                 if((board[position]  == '2') || (board[position]  == '4'))
@@ -401,7 +372,6 @@ bool isNextJump(char board[], int start_position, int turn)
                     {
                         break;
                     }
-                    // oponent_piece = true;
                     position += jump_step;
                     if((position >= 0) && (position <= 63))
                     {
@@ -412,7 +382,6 @@ bool isNextJump(char board[], int start_position, int turn)
                     }
                     break;
                 }
-
                 position += jump_step;
             }
         }
@@ -432,6 +401,29 @@ char *checkIfKing(char board[], int position)
         board[position] = '4';
     }
     return board;
+}
+
+bool allEnemiesRemoved(char board[], int turn)
+{
+    int pieces = 0;
+    for(int i = 0; i < SIZE; i++)
+    {
+        if (turn == 0)
+        {
+            if(board[i] == '2' || board[i] == '4')
+            {
+                pieces++;
+            }
+        }
+        if(turn == 1)
+        {
+            if(board[i] == '1' || board[i] == '3')
+            {
+                pieces++;
+            }
+        }
+    }
+    return pieces == 0;
 }
 
 void send(int file_descriptor, char text[], int sizeOfArray)
@@ -494,24 +486,12 @@ char *createBoard()
     //     }
     // }
 
-    // board_3[14] = '3';
-    // board_3[23] = '2';
-    // board_3[1] = '1';
-    // board_3[56] = '2';
-    // return board_3;
+    // board_3[12] = '3';
+    // board_3[21] = '2';
+   //board_3[1] = '1';
+   // board_3[56] = '2';
+    //return board_3;
 
-
-    // char board_2 [] = {
-    //     '0', '2', '0', '0', '0', '0', '0', '0',
-    //     '0', '0', '0', '0', '0', '0', '3', '0',
-    //     '0', '0', '0', '0', '0', '0', '0', '2',
-    //     '0', '0', '0', '0', '0', '0', '0', '0',
-    //     '0', '0', '0', '0', '0', '0', '0', '0',
-    //     '0', '0', '0', '0', '0', '0', '0', '0',
-    //     '0', '0', '0', '0', '0', '0', '0', '0',
-    //     '1', '0', '0', '0', '0', '0', '0', '0'
-    //     };
-    // return board_2;
     char* board = new char[ROWS * COLUMNS];
     for(int row = 0; row < ROWS; row++)
     {
@@ -546,6 +526,7 @@ void *ThreadBehavior(void *client)
     int my_id = (*t_client).id;
     printf("My id: %d\n", my_id);
 
+    //wiadomosci
     char yourTurn[10] = "Your turn";
     char win[8] = "You win";
     char lose[9] = "You lose";
@@ -554,17 +535,11 @@ void *ThreadBehavior(void *client)
 
     //TWORZENIE PLANSZY W STRUKTURZE GAME - DLA PIERWSZEGO GRACZA Z PARY
     //ORAZ NADANIE TURY
-    //przypisanie liczby pionkow dla kazdego gracza
     //I wyslanie numeru gracza
     if(player == 0)
     {
         (*t_client).checkers->board = createBoard();
-        
         (*t_client).checkers->turn = 0;
-
-        (*t_client).checkers->first_player_pieces = 12;
-        (*t_client).checkers->second_player_pieces = 12;
-        
         send((*t_client).client_socket_descriptor, (char*)"1", 1);
     }
     else
@@ -633,7 +608,7 @@ void *ThreadBehavior(void *client)
                 }
                 printf("ODEBRANA WIADOMOSC: %s\n", tab);
 
-                //ZAKLADAMY, ZE WYSYLA WIADOMOSC 'ROW1COL1ROW2COL2', TAB[0] = ROW1 I TAB[1] = COL1, TAB[2] = ROW2, TAB[3] = COL2
+                //KLIENT WYSYLA WIADOMOSC 'ROW1COL1ROW2COL2', TAB[0] = ROW1 I TAB[1] = COL1, TAB[2] = ROW2, TAB[3] = COL2
                 start_position = getPosition(tab[0], tab[1]);
                 end_position = getPosition(tab[2], tab[3]);
                 printf("ID GRACZA: %d;;; start: %d, end: %d\n", (*t_client).id, start_position, end_position);
@@ -658,7 +633,7 @@ void *ThreadBehavior(void *client)
 
             }
 
-            //zakladamy, ze ruch jest juz prawidlowy
+            //ruch jest prawidlowy
 
             //przestawiamy pionek ze start_position na end_position
             (*t_client).checkers->board[end_position] = (*t_client).checkers->board[start_position];
@@ -668,40 +643,26 @@ void *ThreadBehavior(void *client)
 
             //jesli bylo bicie, wykonaj bicie - zmiana pionka na 0
             //wysylamy plansze do obu graczy
+            //jesli nie ma pionkow przeciwnika - wygrana
             //nastepnie sprawdzamy, czy jest mozliwe kolejne bicie
             //jesli tak, wyslij wiadomosc yourTurn
             if(pieceMove.deletePiece != -1)
             {
                 printf("Wszedlem w if od bicia\n");
                 (*t_client).checkers->board[pieceMove.deletePiece] = '0';
-                //jest bicie
-
-                //zmieniamy liczbe pionkow po biciu
-                if((*t_client).checkers->turn == 0){
-                    pthread_mutex_lock((*t_client).game_mutex);
-                    (*t_client).checkers->second_player_pieces--;
-                    printf("ID gracza: %d, liczba pionkow przeciwnika: %d\n", (*t_client).id, (*t_client).checkers->second_player_pieces);
-                    if((*t_client).checkers->second_player_pieces == 0){
-                        send((*t_client).client_socket_descriptor, win, 8);
-                        send(*(*t_client).second_player_fd, lose, 9);
-                        printf("\n!!!Wygral pierwszy gracz!!!\n");
-                    }
-                    pthread_mutex_unlock((*t_client).game_mutex);
-                }
-                else{
-                    pthread_mutex_lock((*t_client).game_mutex);
-                    (*t_client).checkers->first_player_pieces--;
-                    printf("ID gracza: %d, liczba pionkow przeciwnika: %d\n", (*t_client).id, (*t_client).checkers->first_player_pieces);
-                    if((*t_client).checkers->first_player_pieces == 0){
-                        send((*t_client).client_socket_descriptor, lose, 9);
-                        send(*(*t_client).second_player_fd, win, 8);
-                        printf("\n!!!Wygral drugi gracz!!!\n");
-                    }
-                    pthread_mutex_unlock((*t_client).game_mutex);
-                }
 
                 send((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
                 send(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
+
+
+                if(allEnemiesRemoved((*t_client).checkers->board, (*t_client).checkers->turn))
+                {
+                    send((*t_client).client_socket_descriptor, win, 8);
+                    send(*(*t_client).second_player_fd, lose, 9);
+                    printf("\n!!!Wygral pierwszy gracz!!!\n");
+                    break;
+                }
+
                 /*
                 printf("ID klienta: %d;;; tablica klienta PO BICIU\n", (*t_client).id);
                 for(int i = 0; i < 8; i++){
