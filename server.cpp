@@ -389,19 +389,32 @@ bool isNextJump(char board[], int start_position, int turn)
     return false;
 }
 
-//UTWORZENIE DAMKI
-char *checkIfKing(char board[], int position)
+bool checkIfKing(char board[], int position)
 {
     if((board[position] == '1') && (position / 8 == 7))
     {
-        board[position] = '3';
+        return true;
     }
     else if((board[position] == '2') && (position / 8 == 0))
     {
-        board[position] = '4';
+        return true;
     }
-    return board;
+    return false;
 }
+
+//UTWORZENIE DAMKI
+// char *checkIfKing(char board[], int position)
+// {
+//     if((board[position] == '1') && (position / 8 == 7))
+//     {
+//         board[position] = '3';
+//     }
+//     else if((board[position] == '2') && (position / 8 == 0))
+//     {
+//         board[position] = '4';
+//     }
+//     return board;
+// }
 
 bool allEnemiesRemoved(char board[], int turn)
 {
@@ -486,11 +499,11 @@ char *createBoard()
     //     }
     // }
 
-    // board_3[12] = '3';
-    // board_3[21] = '2';
+    // board_3[46] = '1';
+    // board_3[53] = '2';
    //board_3[1] = '1';
-   // board_3[56] = '2';
-    //return board_3;
+    // board_3[51] = '2';
+    // return board_3;
 
     char* board = new char[ROWS * COLUMNS];
     for(int row = 0; row < ROWS; row++)
@@ -639,7 +652,20 @@ void *ThreadBehavior(void *client)
             (*t_client).checkers->board[end_position] = (*t_client).checkers->board[start_position];
             (*t_client).checkers->board[start_position] = '0';
 
-            (*t_client).checkers->board = checkIfKing((*t_client).checkers->board, end_position);
+            //jesli pionek stal sie damka - zrob damke
+            //(*t_client).checkers->board = checkIfKing((*t_client).checkers->board, end_position);
+            bool isKing = checkIfKing((*t_client).checkers->board, end_position);
+            if(isKing)
+            {
+                if((*t_client).checkers->turn == 0)
+                {
+                    (*t_client).checkers->board[end_position] = '3';
+                }
+                else
+                {
+                    (*t_client).checkers->board[end_position] = '4';
+                }
+            }
 
             //jesli bylo bicie, wykonaj bicie - zmiana pionka na 0
             //wysylamy plansze do obu graczy
@@ -681,7 +707,8 @@ void *ThreadBehavior(void *client)
                 printf("\n");
                 */
 
-                if(isNextJump((*t_client).checkers->board, end_position, (*t_client).checkers->turn))
+                //jesli nie zostal damka
+                if(!isKing && isNextJump((*t_client).checkers->board, end_position, (*t_client).checkers->turn))
                 {
                     previous_jump_end = end_position;
                     send((*t_client).client_socket_descriptor, yourTurn, 10);
