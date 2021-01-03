@@ -57,12 +57,12 @@ def run_game(host, port):
             else:
                 print("Otrzymano wiadomosc: ")
                 board_2d = convert_board(rec_str)
-                pygame_board.draw(board_2d)
+                pygame_board.draw(board_2d, my_turn, player_number)
 
             if(my_turn == True):
                 pygame_board.show_text("Your turn")
                 sleep(1)
-                pygame_board.draw(board_2d)
+                pygame_board.draw(board_2d, my_turn, player_number)
                 #wyslanie ruchu
                 start_field, end_field = pygame_board.get_moves()
                 move = move_to_string(start_field, end_field)

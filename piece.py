@@ -14,8 +14,8 @@ class Piece:
 
     #liczymy x i y na podstawie miejsca na planszy kolumna i rzad
     def calc_pos(self):
-        self.x = SQUARE_SIZE * self.col + SQUARE_SIZE // 2
-        self.y = SQUARE_SIZE * self.row + SQUARE_SIZE // 2
+        self.x = 10 + SQUARE_SIZE * self.col + SQUARE_SIZE // 2
+        self.y = 10 + SQUARE_SIZE * self.row + SQUARE_SIZE // 2
 
     def draw(self, window):
         radius = SQUARE_SIZE // 2 - self.PADDING
