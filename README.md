@@ -1,6 +1,8 @@
 # Checkers
 Client - server project
 
+![](Games.png)
+
 ## Before you run
 
 You have to install Python libraries
