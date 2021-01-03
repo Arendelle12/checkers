@@ -1,5 +1,7 @@
 import pygame
 
+FPS = 60
+
 WIDTH = HEIGHT = 560
 ROWS = COLUMNS = 8
 SQUARE_SIZE = WIDTH / COLUMNS

@@ -36,7 +36,7 @@ def run_game(host, port):
         #     print("Nowa linia")
 
         while(1):
-            #clock.tick(FPS)
+            pygame_board.tick()
             # rec_str = network.recv(64)
             rec_str = network.readline()
             # print(rec_str)

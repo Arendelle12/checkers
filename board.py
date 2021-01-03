@@ -8,10 +8,14 @@ class Board:
         pygame.init()
         self.window = pygame.display.set_mode((WIDTH+20, HEIGHT+20))
         pygame.display.set_caption("Checkers")
+        self.clock = pygame.time.Clock()
         self.board_2d = []
         self.start = None
         self.my_turn = False
         self.player_number = ""
+
+    def tick(self):
+        self.clock.tick(FPS)
 
     def draw_squares(self):
         if self.my_turn:
