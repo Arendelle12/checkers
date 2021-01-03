@@ -37,7 +37,8 @@ def run_game(host, port):
 
         while(1):
             #clock.tick(FPS)
-            rec_str = network.recv(64)
+            # rec_str = network.recv(64)
+            rec_str = network.readline()
 
             """
             if(run == True):

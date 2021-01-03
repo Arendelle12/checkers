@@ -632,7 +632,7 @@ void *ThreadBehavior(void *client)
     printf("WATEK - CO ZAWIERA TABLICA KLIENTA\n%s\n", (*t_client).checkers->board);
     
     //WYSLANIE PLANSZY DO KLIENTA
-    write((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
+    send((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
 
     while(1)
     {    
@@ -679,7 +679,7 @@ void *ThreadBehavior(void *client)
                 else
                 {
                     printf("ID GRACZA: %d;;; KONIEC NIEPOPRAWNY\n", (*t_client).id);
-                    write((*t_client).client_socket_descriptor, yourTurn, 10);
+                    send((*t_client).client_socket_descriptor, yourTurn, 10);
                 } 
 
             }
@@ -722,8 +722,8 @@ void *ThreadBehavior(void *client)
                     }
                 }
 
-                write((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
-                write(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
+                send((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
+                send(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
                 /*
                 printf("ID klienta: %d;;; tablica klienta PO BICIU\n", (*t_client).id);
                 for(int i = 0; i < 8; i++){
@@ -745,7 +745,7 @@ void *ThreadBehavior(void *client)
                 if(isNextJump((*t_client).checkers->board, end_position, (*t_client).checkers->turn))
                 {
                     previous_jump_end = end_position;
-                    write((*t_client).client_socket_descriptor, yourTurn, 10);
+                    send((*t_client).client_socket_descriptor, yourTurn, 10);
                 }
                 else
                 {
@@ -755,15 +755,15 @@ void *ThreadBehavior(void *client)
                     pthread_mutex_unlock((*t_client).game_mutex);
 
                     //wysylamy do przeciwnika wiadomosc TWOJ RUCH
-                    write(*(*t_client).second_player_fd, yourTurn, 10);
+                    send(*(*t_client).second_player_fd, yourTurn, 10);
                 }
                 
             }
             else
             {
                 //wysylamy plansze do obu klientow
-                write((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
-                write(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
+                send((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
+                send(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
 
                 //printf do usuniecia
                 if(print_turn == false){
@@ -780,7 +780,7 @@ void *ThreadBehavior(void *client)
                 }
                 print_turn = true;
                 //wysylamy do przeciwnika wiadomosc TWOJ RUCH
-                write(*(*t_client).second_player_fd, yourTurn, 10);
+                send(*(*t_client).second_player_fd, yourTurn, 10);
             }
 
             //read = read((*t_client).client_socket_descriptor, tab, sizeof(tab)-1);
@@ -798,7 +798,7 @@ void *ThreadBehavior(void *client)
 
         print_turn = false;
     }
-    sleep(5);
+    //sleep(5);
 
     pthread_exit(NULL);
 
