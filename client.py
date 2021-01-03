@@ -33,6 +33,7 @@ def run_game(host, port):
         while(1):
             #clock.tick(FPS)
             rec_str = network.recv(64)
+            print(rec_str)
 
             """
             if(run == True):
@@ -44,16 +45,20 @@ def run_game(host, port):
                 pygame.quit() 
             """      
 
-            if(rec_str == "Twoj ruch\x00"):
+            if(rec_str == "Your turn\x00"):
                 my_turn = True
                 print("TRUE: ", rec_str)
+            elif(rec_str == "You win\x00"):
+                pygame_board.show_text("You win")
+            elif(rec_str == "You lose\x00"):
+                pygame_board.show_text("You lose")
             else:
                 print("Otrzymano wiadomosc: ")
                 board_2d = convert_board(rec_str)
                 pygame_board.draw(board_2d)
 
             if(my_turn == True):
-                pygame_board.show_text()
+                pygame_board.show_text("Your turn")
                 sleep(1)
                 pygame_board.draw(board_2d)
                 #wyslanie ruchu
