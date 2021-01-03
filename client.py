@@ -26,16 +26,6 @@ def run_game(host, port):
             
             rec_str = network.readline()
 
-            """
-            if(run == True):
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        run = False
-
-            if(run == False):
-                pygame.quit() 
-            """      
-
             if(rec_str == "Your turn\x00"):
                 my_turn = True
             elif(rec_str == "You win\x00"):

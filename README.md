@@ -5,6 +5,11 @@ Client - server project
 
 ## Before you run
 
+You have to install Tkinter
+```
+sudo apt-get install python3-tk
+```
+
 You have to install Python libraries
 ```
 make install_client_lib

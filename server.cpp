@@ -17,14 +17,6 @@ using namespace std;
 #define SIZE 64
 #define MAX_NUM_OF_GAMES 50
 
-//TODO
-/*
-- damki
-- uporzadkowanie kodu : osobny plik na gre (?)
-*/
-
-//SPRAWDZANIE CZY DAMKA MA BICIE
-
 struct game
 {
     char *board;
@@ -402,20 +394,6 @@ bool checkIfKing(char board[], int position)
     return false;
 }
 
-//UTWORZENIE DAMKI
-// char *checkIfKing(char board[], int position)
-// {
-//     if((board[position] == '1') && (position / 8 == 7))
-//     {
-//         board[position] = '3';
-//     }
-//     else if((board[position] == '2') && (position / 8 == 0))
-//     {
-//         board[position] = '4';
-//     }
-//     return board;
-// }
-
 bool allEnemiesRemoved(char board[], int turn)
 {
     int pieces = 0;
@@ -490,20 +468,6 @@ int getPosition(char row, char col)
 //TWORZENIE PLANSZY
 char *createBoard()
 {
-    // char* board_3 = new char[ROWS * COLUMNS];
-    // for(int row = 0; row < ROWS; row++)
-    // {
-    //     for(int col = 0; col < COLUMNS; col++)
-    //     {
-    //         board_3[row * ROWS + col] = '0';
-    //     }
-    // }
-
-    // board_3[46] = '1';
-    // board_3[53] = '2';
-   //board_3[1] = '1';
-    // board_3[51] = '2';
-    // return board_3;
 
     char* board = new char[ROWS * COLUMNS];
     for(int row = 0; row < ROWS; row++)
@@ -602,17 +566,6 @@ void *ThreadBehavior(void *client)
             {
                 //ODCZYTUJEMY RUCH
                 readc = readLine((*t_client).client_socket_descriptor);
-                /*if(readc <= 0)
-                {
-                    pthread_mutex_lock((*t_client).connection_mutex);
-                    *(*t_client).position_in_clients_array = -1;
-                    (*t_client).connected_clients--;
-                    *(*t_client).checkers->turn = 0;
-                    close((*t_client).client_socket_descriptor);
-                    free(t_client);
-                    pthread_mutex_unlock((*t_client).connection_mutex);
-                    pthread_exit(NULL);
-                }*/
                 
                 tab[readc.length()]; 
                 for (unsigned int i = 0; i < sizeof(tab); i++)
@@ -653,7 +606,6 @@ void *ThreadBehavior(void *client)
             (*t_client).checkers->board[start_position] = '0';
 
             //jesli pionek stal sie damka - zrob damke
-            //(*t_client).checkers->board = checkIfKing((*t_client).checkers->board, end_position);
             bool isKing = checkIfKing((*t_client).checkers->board, end_position);
             if(isKing)
             {
@@ -688,24 +640,6 @@ void *ThreadBehavior(void *client)
                     printf("\n!!!Wygral pierwszy gracz!!!\n");
                     break;
                 }
-
-                /*
-                printf("ID klienta: %d;;; tablica klienta PO BICIU\n", (*t_client).id);
-                for(int i = 0; i < 8; i++){
-                    for(int j = 0; j < 8; j++){ 
-                        printf("%d ",(*t_client).checkers->board[i*8+j]-'0');
-                    }
-                    printf("\n");
-                }*/
-                //printf do usuniecia
-                /*
-                printf("\nID GRACZA: %d;;; Wyznaczone kolejne bicia: \n", (*t_client).id);
-                for(int i = 0; i < 5; i++)
-                {
-                    printf("%d, ", moves[i]);
-                }
-                printf("\n");
-                */
 
                 //jesli nie zostal damka
                 if(!isKing && isNextJump((*t_client).checkers->board, end_position, (*t_client).checkers->turn))
@@ -748,23 +682,10 @@ void *ThreadBehavior(void *client)
                 //wysylamy do przeciwnika wiadomosc TWOJ RUCH
                 send(*(*t_client).second_player_fd, yourTurn, 10);
             }
-
-            //read = read((*t_client).client_socket_descriptor, tab, sizeof(tab)-1);
-            /*if (n == -1){
-                printf("Read error occures\n");
-                close((*t_client).client_socket_descriptor);
-                free(t_client);
-            }
-            if (n == 0){
-                printf("Client disconnected\n");
-                close((*t_client).client_socket_descriptor);
-                free(t_client);
-            }*/
         }
 
         print_turn = false;
     }
-    //sleep(5);
 
     pthread_exit(NULL);
 
@@ -774,9 +695,6 @@ void handleConnection(struct client_info *client)
 {
     int create_result = 0;
     pthread_t thread1;
-
-    //int second_player_id = *(*client).second_player_fd;
-    //printf("player2 fd : %d\n", second_player_id);
 
     create_result = pthread_create(&thread1, NULL, ThreadBehavior, (void *)client);
     if(create_result)
@@ -879,7 +797,6 @@ int main(int argc, char* argv[]){
             printf("Server accept failed\n");
             exit(1);
         }
-        //printf("Deskryptor klienta: %d\n", connection_socket_descriptor);
 
         //Dodajemy klienta do tablicy clients -> wpisujemy connection_socket_descriptor tam, gdzie jest -1 
         pthread_mutex_lock(&connection_mutex);
@@ -891,9 +808,7 @@ int main(int argc, char* argv[]){
                 if(clients[i] == -1)
                 {
                     printf("Connection socket desc: %d\n", connection_socket_descriptor);
-                    printf("1111 Clients pozycja: %d, wartosc: %d\n", i, clients[i]);
                     clients[i] = connection_socket_descriptor;
-                    printf("2222 Clients pozycja: %d, wartosc: %d\n", i, clients[i]);
                     client_id = i;
                     connected_clients++;
                     game_id = client_id/2;
