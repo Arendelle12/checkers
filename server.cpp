@@ -440,54 +440,27 @@ void send(int file_descriptor, char text[], int sizeOfArray)
     write(file_descriptor, "\n", 1);
 }
 
-//ZAMIANA TABLICY CHAR NA TABLICE INT
-// int *charArrayToInt(char array[])
-// {
-    
-//     int* buf = new int [ROWS * COLUMNS];
-//     for(int i = 0; i < ROWS * COLUMNS; i++)
-//     {
-//         buf[i] = array[i] - '0';
-//         //printf("%d\n", buf[i]);
-//     }
-//     return buf;
-// }
-
-//ZAMIANA TABLICY INT NA TABLICE CHAR
-// char *intArrayToChar(int array[])
-// {
-//     char* buf = new char[ROWS * COLUMNS];
-//     for(int i = 0; i < ROWS * COLUMNS; i++)
-//     {
-//         buf[i] = array[i] + '0';
-//         //printf("%c\n", temp2[i]);
-//     }
-//     return buf;
-// }
-/*
-//ZAMIANA TABLICY 2D NA 1D
-int temp1[n];
-for(int i = 0; i < n; i++)
+string readLine(int file_descriptor)
 {
-    temp1[i] = temp[i/3][i%3];
-    //printf("Element na pozycji temp1[%d] wynosi %d\n", i, temp1[i]);
-}
-
-
-*/
-
-/*
-//ZAMIANA TABLICY 1D NA 2D
-int temp[2][3];
-for(int i = 0; i < 2; i++)
-{
-    for(int j = 0; j < 3; j++)
+    string s = "";
+    int n;
+    while (true)
     {
-        temp[i][j] = buf[i*3+j];
-        //printf("Element na pozycji temp[%d][%d] wynosi %d\n", i, j, temp[i][j]);
+        char tab[2];
+        n = read(file_descriptor, tab, sizeof(tab)-1);
+        cout << tab;
+        cout << "\n";
+        tab[n] = 0;
+        if (tab[0] == '\n')
+        {
+            return s;
+        }
+        else
+        {
+            s += tab[0];
+        }
     }
 }
-*/
 
 int changeTurn(int turn)
 {
@@ -592,14 +565,10 @@ void *ThreadBehavior(void *client)
         (*t_client).checkers->first_player_pieces = 12;
         (*t_client).checkers->second_player_pieces = 12;
         
-        //write((*t_client).client_socket_descriptor, "1", 1);
-
-        // size_t length = sizeof(text)/sizeof(*text);
         send((*t_client).client_socket_descriptor, (char*)"1", 1);
     }
     else
     {
-        //write((*t_client).client_socket_descriptor, "2", 1);
         send((*t_client).client_socket_descriptor, (char*)"2", 1);
     }
 
@@ -614,7 +583,7 @@ void *ThreadBehavior(void *client)
     //zamieniamy napis na tablice
     //zamieniamy tablice na napis
     //wysylamy napis do klienta o nieparzystym id
-    int readc = 0;
+    string readc = "";
     int start_position;
     int end_position;
 
@@ -644,7 +613,7 @@ void *ThreadBehavior(void *client)
             while(true)
             {
                 //ODCZYTUJEMY RUCH
-                readc = read((*t_client).client_socket_descriptor, tab, sizeof(tab)-1);
+                readc = readLine((*t_client).client_socket_descriptor);
                 /*if(readc <= 0)
                 {
                     pthread_mutex_lock((*t_client).connection_mutex);
@@ -656,7 +625,12 @@ void *ThreadBehavior(void *client)
                     pthread_mutex_unlock((*t_client).connection_mutex);
                     pthread_exit(NULL);
                 }*/
-                tab[readc] = 0;
+                
+                tab[readc.length()]; 
+                for (unsigned int i = 0; i < sizeof(tab); i++)
+                {
+                    tab[i] = readc[i];
+                }
                 printf("ODEBRANA WIADOMOSC: %s\n", tab);
 
                 //ZAKLADAMY, ZE WYSYLA WIADOMOSC 'ROW1COL1ROW2COL2', TAB[0] = ROW1 I TAB[1] = COL1, TAB[2] = ROW2, TAB[3] = COL2
