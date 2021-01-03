@@ -9,8 +9,6 @@ from time import sleep
 def run_game(host, port):
     my_turn = False
 
-    #FPS = 60
-
     #game window
     board_2d = []
     with Network(host, port) as network:
@@ -18,29 +16,15 @@ def run_game(host, port):
         pygame_board = Board()
         pygame_board.draw_squares()
 
-        #clock
-        #clock = pygame.time.Clock()
-        #run
-        #run = True
-
-        #while(True):
-            #odebranie informacji 
-        # player_number = network.recv(1)
         player_number = network.readline()
         print(player_number)
         if(player_number == "1"):
             my_turn = True
 
-        # s = network.recv(1)
-        # if(s == "\n"):
-        #     print("Nowa linia")
-
         while(1):
             pygame_board.tick()
-            # rec_str = network.recv(64)
+            
             rec_str = network.readline()
-            # print(rec_str)
-            # print("Length: ", len(rec_str))
 
             """
             if(run == True):
@@ -54,13 +38,10 @@ def run_game(host, port):
 
             if(rec_str == "Your turn\x00"):
                 my_turn = True
-                print("TRUE: ", rec_str)
             elif(rec_str == "You win\x00"):
-                print("You win!!!")
                 pygame_board.show_text("You win!")
                 sleep(5)
             elif(rec_str == "You lose\x00"):
-                print("You lose!!!")
                 pygame_board.show_text("You lose")
                 sleep(5)
             else:
