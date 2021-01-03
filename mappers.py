@@ -18,9 +18,9 @@ def convert_board(rec_board):
         print(res2d[i])
     return res2d
 
-def move_to_string(start, end):
-    move = start + end
-    #lista string
-    data = [str(x) for x in move] 
-    send_str = ''.join(data)
-    return send_str
+# def move_to_string(start, end):
+#     move = start + end
+#     #lista string
+#     data = [str(x) for x in move] 
+#     send_str = ''.join(data)
+#     return send_str

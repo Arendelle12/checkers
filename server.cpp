@@ -543,6 +543,7 @@ void *ThreadBehavior(void *client)
     char yourTurn[10] = "Your turn";
     char win[8] = "You win";
     char lose[9] = "You lose";
+    char exit[5] = "EXIT";
     
     int player = (*t_client).id %2;
 
@@ -615,7 +616,13 @@ void *ThreadBehavior(void *client)
                     pthread_mutex_unlock((*t_client).connection_mutex);
                     pthread_exit(NULL);
                 }*/
-                
+                if (readc == "EXIT")
+                {
+                    send((*t_client).client_socket_descriptor, exit, 5);
+                    send(*(*t_client).second_player_fd, exit, 5);
+                }
+
+
                 tab[readc.length()]; 
                 for (unsigned int i = 0; i < sizeof(tab); i++)
                 {

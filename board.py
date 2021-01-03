@@ -69,21 +69,37 @@ class Board:
         x, y = pos
         row = int((y - 10) // SQUARE_SIZE)
         col = int((x - 10) // SQUARE_SIZE)
-        return row, col
+        return f"{row}{col}"
 
-    def _wait_for_press(self):
-        while(True):
-            for event in pygame.event.get():
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    start_pos = pygame.mouse.get_pos()
-                    return self._get_row_col_from_mouse(start_pos)
+    # def _wait_for_press(self):
+    #     while(True):
+    #         for event in pygame.event.get():
+    #             if event.type == pygame.MOUSEBUTTONDOWN:
+    #                 start_pos = pygame.mouse.get_pos()
+    #                 return self._get_row_col_from_mouse(start_pos)
 
-    def get_moves(self):
-        start_tuple = self._wait_for_press()
-        self.start = start_tuple
+    # def get_moves(self):
+    #     start_tuple = self._wait_for_press()
+    #     self.start = start_tuple
+    #     self.draw(self.board_2d, self.my_turn, self.player_number)
+    #     end_tuple = self._wait_for_press()
+    #     return start_tuple, end_tuple
+
+    def something_pressed(self):
+        # -1 = exit
+        # 0 = brak wcisniecia
+        # 23 = pole (2 cyfry)
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                return self._get_row_col_from_mouse(pos)
+            elif event.type == pygame.QUIT:
+                return "-1"
+        return "0"
+
+    def set_selected_field(self, start_field):
+        self.start = (start_field[0], start_field[1])
         self.draw(self.board_2d, self.my_turn, self.player_number)
-        end_tuple = self._wait_for_press()
-        return start_tuple, end_tuple
 
     def show_text(self, caption):
         font = pygame.font.SysFont("ubuntu", 70)
