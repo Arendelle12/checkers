@@ -5,7 +5,7 @@ install_client_lib:
 	python3 -m pip install -r requirements.txt
 
 run_server:
-	./server
+	./server $(port)
 
 run_client:
 	python3 client.py

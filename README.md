@@ -17,7 +17,7 @@ make compile_server
 
 Start the server
 ```
-make run_server
+make run_server port=1234
 ```
 
 Next start two instance of the client

@@ -808,7 +808,15 @@ void handleConnection(struct client_info *client)
     }
 }
 
-int main(){
+int main(int argc, char* argv[]){
+
+    if(argc != 2)
+    {
+        printf("Sposob uzycia: ./server numer_portu\n");
+        exit(1);
+    }
+    int server_port = atoi(argv[1]);
+
     struct sockaddr_in server_address;
     int clients[MAX_NUM_OF_CLIENTS];
     int option_value = 1;
@@ -846,7 +854,7 @@ int main(){
     //inicjalizacja gniazda serwera
     memset(&server_address, 0, sizeof(server_address));
     server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(1234);
+    server_address.sin_port = htons(server_port);
     server_address.sin_addr.s_addr = htonl(INADDR_ANY);
 
     //deskryptor gniazda - server_socket_descriptor
