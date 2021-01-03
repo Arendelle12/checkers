@@ -543,6 +543,7 @@ void *ThreadBehavior(void *client)
     char yourTurn[10] = "Your turn";
     char win[8] = "You win";
     char lose[9] = "You lose";
+    char exit[5] = "EXIT";
     
     int player = (*t_client).id %2;
 
@@ -614,6 +615,19 @@ void *ThreadBehavior(void *client)
                     pthread_exit(NULL);
                 }*/
                 
+                if (readc == "EXIT")
+                {
+                    send(*(*t_client).second_player_fd, exit, 5);
+                    pthread_mutex_lock((*t_client).connection_mutex);
+                    *(*t_client).position_in_clients_array = -1;
+                    (*t_client).connected_clients--;
+                    (*t_client).checkers->turn = changeTurn((*t_client).checkers->turn);
+                    close((*t_client).client_socket_descriptor);
+                    pthread_mutex_unlock((*t_client).connection_mutex);
+                    free(t_client);
+                    pthread_exit(NULL);
+                }
+
                 tab[readc.length()]; 
                 for (unsigned int i = 0; i < sizeof(tab); i++)
                 {
@@ -790,6 +804,8 @@ int main(int argc, char* argv[]){
 
     if(argc != 2)
     {
+        printf("Sposob uzycia: make run_server port=numer_portu\n");
+        printf("LUB\n");
         printf("Sposob uzycia: ./server numer_portu\n");
         exit(1);
     }

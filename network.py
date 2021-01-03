@@ -25,9 +25,13 @@ class Network:
     def readline(self):
         text = ""
         while(True):
-            data = self.client.recv(1)
-            value = data.decode()
-            if value == "\n":
-                return text
-            else:
-                text = text + value
+            try:
+                self.client.settimeout(1.0)
+                data = self.client.recv(1)
+                value = data.decode()
+                if value == "\n":
+                    return text
+                else:
+                    text = text + value
+            except socket.timeout:
+                return ""

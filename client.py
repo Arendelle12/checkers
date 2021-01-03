@@ -24,6 +24,10 @@ def run_game(host, port):
         while(1):
             pygame_board.tick()
             
+            if(pygame_board.something_pressed() == "-1"):
+                network.sendall("EXIT")
+                return
+
             rec_str = network.readline()
 
             """
@@ -36,7 +40,13 @@ def run_game(host, port):
                 pygame.quit() 
             """      
 
-            if(rec_str == "Your turn\x00"):
+            if(rec_str == ""):
+                # print("Socket timeout")
+                continue
+            elif(rec_str == "EXIT\x00"):
+                network.sendall("EXIT")
+                return
+            elif(rec_str == "Your turn\x00"):
                 my_turn = True
             elif(rec_str == "You win\x00"):
                 pygame_board.show_text("You win!")
@@ -53,10 +63,27 @@ def run_game(host, port):
                 pygame_board.show_text("Your turn")
                 sleep(1)
                 pygame_board.draw(board_2d, my_turn, player_number)
-                #wyslanie ruchu
-                start_field, end_field = pygame_board.get_moves()
-                move = move_to_string(start_field, end_field)
-                print(move)
+
+                start_field = "0"
+                while(start_field == "0"):
+                    start_field = pygame_board.something_pressed()
+                
+                if (start_field == "-1"):
+                    network.sendall("EXIT")
+                    return
+
+                pygame_board.set_selected_field(start_field)
+
+                end_field = "0"
+                while(end_field == "0"):
+                    end_field = pygame_board.something_pressed()
+
+                if (end_field == "-1"):
+                    network.sendall("EXIT")
+                    return
+            
+                print(start_field, end_field)
+                move = start_field + end_field
                 network.sendall(move)
                 my_turn = False
 
