@@ -8,12 +8,10 @@ class Network:
         self.addr = (self.server, self.port)
 
     def __enter__(self):
-        print("Network __enter__")
         self.client.connect(self.addr)
         return self
 
     def __exit__(self, *args):
-        print("Network __exit__")
         self.client.close()
 
     def sendall(self, move):
@@ -23,3 +21,15 @@ class Network:
     def recv(self, n):
         byt = self.client.recv(n)
         return byt.decode('utf-8')
+
+    def readline(self):
+        text = ""
+        while(True):
+            data = self.client.recv(1)
+            value = data.decode()
+            # print(value)
+            if value == "\n":
+                print('NOWA LINIA')
+                return text
+            else:
+                text = text + value

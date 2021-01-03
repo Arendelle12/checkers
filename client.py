@@ -25,10 +25,15 @@ def run_game(host, port):
 
         #while(True):
             #odebranie informacji 
-        player_number = network.recv(1)
+        # player_number = network.recv(1)
+        player_number = network.readline()
         print(player_number)
         if(player_number == "1"):
             my_turn = True
+
+        # s = network.recv(1)
+        # if(s == "\n"):
+        #     print("Nowa linia")
 
         while(1):
             #clock.tick(FPS)
@@ -47,13 +52,14 @@ def run_game(host, port):
             if(rec_str == "Twoj ruch\x00"):
                 my_turn = True
                 print("TRUE: ", rec_str)
+            
             else:
                 print("Otrzymano wiadomosc: ")
                 board_2d = convert_board(rec_str)
                 pygame_board.draw(board_2d)
 
             if(my_turn == True):
-                pygame_board.show_text()
+                pygame_board.show_text("Your turn")
                 sleep(1)
                 pygame_board.draw(board_2d)
                 #wyslanie ruchu

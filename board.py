@@ -70,8 +70,8 @@ class Board:
         end_tuple = self._wait_for_press()
         return start_tuple, end_tuple
 
-    def show_text(self):
+    def show_text(self, caption):
         font = pygame.font.SysFont("ubuntu", 70)
-        text = font.render("Your turn", True, RED)
+        text = font.render(caption, True, RED)
         self.window.blit(text, (150, 210))
         pygame.display.update()

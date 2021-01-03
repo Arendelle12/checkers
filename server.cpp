@@ -434,30 +434,36 @@ char *checkIfKing(char board[], int position)
     return board;
 }
 
-//ZAMIANA TABLICY CHAR NA TABLICE INT
-int *charArrayToInt(char array[])
+void send(int file_descriptor, char text[], int sizeOfArray)
 {
-    
-    int* buf = new int [ROWS * COLUMNS];
-    for(int i = 0; i < ROWS * COLUMNS; i++)
-    {
-        buf[i] = array[i] - '0';
-        //printf("%d\n", buf[i]);
-    }
-    return buf;
+    write(file_descriptor, text, sizeOfArray);
+    write(file_descriptor, "\n", 1);
 }
 
+//ZAMIANA TABLICY CHAR NA TABLICE INT
+// int *charArrayToInt(char array[])
+// {
+    
+//     int* buf = new int [ROWS * COLUMNS];
+//     for(int i = 0; i < ROWS * COLUMNS; i++)
+//     {
+//         buf[i] = array[i] - '0';
+//         //printf("%d\n", buf[i]);
+//     }
+//     return buf;
+// }
+
 //ZAMIANA TABLICY INT NA TABLICE CHAR
-char *intArrayToChar(int array[])
-{
-    char* buf = new char[ROWS * COLUMNS];
-    for(int i = 0; i < ROWS * COLUMNS; i++)
-    {
-        buf[i] = array[i] + '0';
-        //printf("%c\n", temp2[i]);
-    }
-    return buf;
-}
+// char *intArrayToChar(int array[])
+// {
+//     char* buf = new char[ROWS * COLUMNS];
+//     for(int i = 0; i < ROWS * COLUMNS; i++)
+//     {
+//         buf[i] = array[i] + '0';
+//         //printf("%c\n", temp2[i]);
+//     }
+//     return buf;
+// }
 /*
 //ZAMIANA TABLICY 2D NA 1D
 int temp1[n];
@@ -568,6 +574,8 @@ void *ThreadBehavior(void *client)
     printf("My id: %d\n", my_id);
 
     char yourTurn[10] = "Twoj ruch";
+    char win[8] = "You win";
+    char lose[9] = "You lose";
     
     int player = (*t_client).id %2;
 
@@ -584,11 +592,15 @@ void *ThreadBehavior(void *client)
         (*t_client).checkers->first_player_pieces = 12;
         (*t_client).checkers->second_player_pieces = 12;
         
-        write((*t_client).client_socket_descriptor, "1", 1);
+        //write((*t_client).client_socket_descriptor, "1", 1);
+
+        // size_t length = sizeof(text)/sizeof(*text);
+        send((*t_client).client_socket_descriptor, (char*)"1", 1);
     }
     else
     {
-        write((*t_client).client_socket_descriptor, "2", 1);
+        //write((*t_client).client_socket_descriptor, "2", 1);
+        send((*t_client).client_socket_descriptor, (char*)"2", 1);
     }
 
     printf("\nTURA: %d\n", (*t_client).checkers->turn);
