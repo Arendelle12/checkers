@@ -554,10 +554,15 @@ void *ThreadBehavior(void *client)
         (*t_client).checkers->board = createBoard();
         (*t_client).checkers->turn = 0;
         send((*t_client).client_socket_descriptor, (char*)"1", 1);
+        send((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
+
+        send((*t_client).client_socket_descriptor, yourTurn, 10);
     }
     else
     {
         send((*t_client).client_socket_descriptor, (char*)"2", 1);
+        send((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
+
     }
 
     printf("\nTURA: %d\n", (*t_client).checkers->turn);
@@ -587,9 +592,6 @@ void *ThreadBehavior(void *client)
     }
 
     printf("WATEK - CO ZAWIERA TABLICA KLIENTA\n%s\n", (*t_client).checkers->board);
-    
-    //WYSLANIE PLANSZY DO KLIENTA
-    send((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
 
     while(1)
     {    

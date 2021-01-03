@@ -108,25 +108,27 @@ def board_manager(gameState):
     player_number = None
     while(player_number is None):
         player_number = gameState.get_player_number()
+    previous_board = ""
     while(1):
         pygame_board.tick()
         board = gameState.get_board()
-        print("Board: ", board)
         if(board is not None):
-            print("Board is not none")
-            board_2d = convert_board(board)
-            my_turn = gameState.get_turn()
-            pygame_board.draw(board_2d, my_turn, player_number)
+            if(previous_board != board):
+                previous_board = board
+                board_2d = convert_board(board)
+                my_turn = gameState.get_turn()
+                pygame_board.draw(board_2d, my_turn, player_number)
         if(board is not None and gameState.get_turn()):
             print("Show your turn")
             pygame_board.show_text("Your turn") 
             sleep(1) 
+            pygame_board.draw(board_2d, my_turn, player_number)
             start_field, end_field = pygame_board.get_moves()
             print(start_field, end_field)
             move = move_to_string(start_field, end_field)
             print(move)
-            gameState.set_move(move)
             gameState.set_turn(False)
+            gameState.set_move(move)
         if(gameState.get_win()):
             pygame_board.show_text("You win!")
         if(gameState.get_lose()):
@@ -144,26 +146,27 @@ def connection(gameState, host, port):
         player_number = network.readline()
         gameState.set_player_number(player_number)
         print(player_number)
-        if(player_number == "1"):
-            gameState.set_turn(True)
+        # if(player_number == "1"):
+        #     gameState.set_turn(True)
         while(1):
             rec_str = network.readline()
             if(rec_str == "Your turn\x00"):
                 print("Ustawiam ture")
                 gameState.set_turn(True)
+                move = None
+                while(move is None):
+                    move = gameState.get_move()
+                gameState.set_move(None)
+                network.sendall(move)
+                print("Ruch wyslany")
             elif(rec_str == "You win\x00"):
                 gameState.set_win(True)
             elif(rec_str == "You lose\x00"):
                 gameState.set_lose(True)
-            elif(rec_str != gameState.get_board()):
+            else:
                 print("Otrzymano wiadomosc: ")
                 gameState.set_board(rec_str)
-            move = gameState.get_move()
-            if(gameState.get_move() != move):
-                ("Ruch jest inny")
-                move = gameState.get_move()
-                network.sendall(move)
-                print("Ruch wyslany")
+            
 
 
     # pobierz move z gameState (jesli sie zmienil to wyslij)
