@@ -419,8 +419,33 @@ bool allEnemiesRemoved(char board[], int turn)
 
 void sendMsgWithNewLine(int file_descriptor, const char text[], int sizeOfArray)
 {
-    write(file_descriptor, text, sizeOfArray);
-    write(file_descriptor, "\n", 1);
+    //trzeba wyslac sizeOfArray znakow
+    int n = 0;
+    int w = 0;
+    while(n < sizeOfArray+1)
+    {
+        w = write(file_descriptor, text, sizeOfArray);
+        if(w < 0 && w == EPIPE)
+        {
+            printf("Write error\n");
+            break;
+        }
+        else
+        {
+            n += w;
+            w = write(file_descriptor, "\n", 1);
+            if(w < 0  && w == EPIPE)
+            {
+                printf("Write error\n");
+                break;
+            }
+            else
+            {
+                n += w;
+            }
+        }
+        cout << n << " zapisanych znakow\n";
+    }
 }
 
 string readLine(int file_descriptor)
@@ -431,8 +456,14 @@ string readLine(int file_descriptor)
     {
         char tab[2];
         n = read(file_descriptor, tab, sizeof(tab)-1);
+        cout << "Odebrano " << n << " bajtow\n";
         cout << tab;
         cout << "\n";
+        if (n <= 0)
+        {
+            s = "";
+            return s;
+        }
         tab[n] = 0;
         if (tab[0] == '\n')
         {
@@ -513,18 +544,27 @@ void *ThreadBehavior(void *client)
     //TWORZENIE PLANSZY W STRUKTURZE GAME - DLA PIERWSZEGO GRACZA Z PARY
     //ORAZ NADANIE TURY
     //I wyslanie numeru gracza
-    if(player == 0)
+    // if(player == 0)
+    // {
+    //     (*t_client).checkers->board = createBoard();
+    //     (*t_client).checkers->turn = 0;
+    //     sendMsgWithNewLine((*t_client).client_socket_descriptor, (char*)"1", 1);
+    // }
+    // else
+    if(player == 1)
     {
         (*t_client).checkers->board = createBoard();
         (*t_client).checkers->turn = 0;
-        sendMsgWithNewLine((*t_client).client_socket_descriptor, (char*)"1", 1);
-    }
-    else
-    {
+        sendMsgWithNewLine(*(*t_client).second_player_fd, (char*)"1", 1);
         sendMsgWithNewLine((*t_client).client_socket_descriptor, (char*)"2", 1);
+
+        sendMsgWithNewLine((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
+        sendMsgWithNewLine(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
+
+
     }
 
-    printf("\nTURA: %d\n", (*t_client).checkers->turn);
+    //printf("\nTURA: %d\n", (*t_client).checkers->turn);
 
     
     
@@ -545,15 +585,15 @@ void *ThreadBehavior(void *client)
 
 
     //CZEKAMY NA WEJSCIE DRUGIEGO GRACZA
-    while(*(*t_client).second_player_fd == -1)
-    {
+    // while(*(*t_client).second_player_fd == -1)
+    // {
         
-    }
+    // }
 
-    printf("WATEK - CO ZAWIERA TABLICA KLIENTA\n%s\n", (*t_client).checkers->board);
+    //printf("WATEK - CO ZAWIERA TABLICA KLIENTA\n%s\n", (*t_client).checkers->board);
     
     //WYSLANIE PLANSZY DO KLIENTA
-    sendMsgWithNewLine((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
+    //sendMsgWithNewLine((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
 
     while(1)
     {    
@@ -566,6 +606,19 @@ void *ThreadBehavior(void *client)
             {
                 //ODCZYTUJEMY RUCH
                 readc = readLine((*t_client).client_socket_descriptor);
+                if(readc == "")
+                {
+                    cout << "Wszedlem w if pusty string\n";
+                    pthread_mutex_lock((*t_client).connection_mutex);
+                    *(*t_client).position_in_clients_array = -1;
+                    *(*t_client).connected_clients = *(*t_client).connected_clients - 1;
+                    printf("Connected clients: %d\n", *(*t_client).connected_clients);
+                    (*t_client).checkers->turn = 0;
+                    pthread_mutex_unlock((*t_client).connection_mutex);
+                    close((*t_client).client_socket_descriptor);
+                    free(t_client);
+                    pthread_exit(NULL);
+                }
                 
                 // tab[readc.length()]; 
                 for (unsigned int i = 0; i < sizeof(tab); i++)
@@ -802,7 +855,9 @@ int main(int argc, char* argv[]){
 
         //Dodajemy klienta do tablicy clients -> wpisujemy connection_socket_descriptor tam, gdzie jest -1 
         pthread_mutex_lock(&connection_mutex);
-        printf("Mutex LOCKED\n");
+        //printf("Mutex LOCKED\n");
+
+        printf("Polaczonych klientow : %d\n", connected_clients);
 
         if(connected_clients < MAX_NUM_OF_CLIENTS)
         {
@@ -852,7 +907,7 @@ int main(int argc, char* argv[]){
         
 
         pthread_mutex_unlock(&connection_mutex);
-        printf("Mutex UNLOCKED\n");
+        //printf("Mutex UNLOCKED\n");
 
        
         
