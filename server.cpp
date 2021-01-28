@@ -425,6 +425,7 @@ void sendMsgWithNewLine(int file_descriptor, const char text[], int sizeOfArray)
     while(n < sizeOfArray+1)
     {
         w = write(file_descriptor, text, sizeOfArray);
+        printf("w = %d\n", w);
         if(w < 0 && w == EPIPE)
         {
             printf("Write error\n");
@@ -434,6 +435,7 @@ void sendMsgWithNewLine(int file_descriptor, const char text[], int sizeOfArray)
         {
             n += w;
             w = write(file_descriptor, "\n", 1);
+            printf("w = %d\n", w);
             if(w < 0  && w == EPIPE)
             {
                 printf("Write error\n");
