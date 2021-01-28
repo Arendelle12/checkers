@@ -417,7 +417,7 @@ bool allEnemiesRemoved(char board[], int turn)
     return pieces == 0;
 }
 
-void sendMsgWithNewLine(int file_descriptor, char text[], int sizeOfArray)
+void sendMsgWithNewLine(int file_descriptor, const char text[], int sizeOfArray)
 {
     write(file_descriptor, text, sizeOfArray);
     write(file_descriptor, "\n", 1);
@@ -504,9 +504,9 @@ void *ThreadBehavior(void *client)
     printf("My id: %d\n", my_id);
 
     //wiadomosci
-    char yourTurn[10] = "Your turn";
-    char win[8] = "You win";
-    char lose[9] = "You lose";
+    const char *yourTurn = "Your turn";
+    const char *win = "You win";
+    const char *lose = "You lose";
     
     int player = (*t_client).id %2;
 
@@ -594,7 +594,7 @@ void *ThreadBehavior(void *client)
                 else
                 {
                     printf("ID GRACZA: %d;;; KONIEC NIEPOPRAWNY\n", (*t_client).id);
-                    sendMsgWithNewLine((*t_client).client_socket_descriptor, yourTurn, 10);
+                    sendMsgWithNewLine((*t_client).client_socket_descriptor, yourTurn, strlen(yourTurn));
                 } 
 
             }
@@ -635,8 +635,8 @@ void *ThreadBehavior(void *client)
 
                 if(allEnemiesRemoved((*t_client).checkers->board, (*t_client).checkers->turn))
                 {
-                    sendMsgWithNewLine((*t_client).client_socket_descriptor, win, 8);
-                    sendMsgWithNewLine(*(*t_client).second_player_fd, lose, 9);
+                    sendMsgWithNewLine((*t_client).client_socket_descriptor, win, strlen(win));
+                    sendMsgWithNewLine(*(*t_client).second_player_fd, lose, strlen(lose));
                     printf("\n!!!Wygral pierwszy gracz!!!\n");
                     break;
                 }
@@ -645,7 +645,7 @@ void *ThreadBehavior(void *client)
                 if(!isKing && isNextJump((*t_client).checkers->board, end_position, (*t_client).checkers->turn))
                 {
                     previous_jump_end = end_position;
-                    sendMsgWithNewLine((*t_client).client_socket_descriptor, yourTurn, 10);
+                    sendMsgWithNewLine((*t_client).client_socket_descriptor, yourTurn, strlen(yourTurn));
                 }
                 else
                 {
@@ -655,7 +655,7 @@ void *ThreadBehavior(void *client)
                     pthread_mutex_unlock((*t_client).game_mutex);
 
                     //wysylamy do przeciwnika wiadomosc TWOJ RUCH
-                    sendMsgWithNewLine(*(*t_client).second_player_fd, yourTurn, 10);
+                    sendMsgWithNewLine(*(*t_client).second_player_fd, yourTurn, strlen(yourTurn));
                 }
                 
             }
@@ -680,7 +680,7 @@ void *ThreadBehavior(void *client)
                 }
                 print_turn = true;
                 //wysylamy do przeciwnika wiadomosc TWOJ RUCH
-                sendMsgWithNewLine(*(*t_client).second_player_fd, yourTurn, 10);
+                sendMsgWithNewLine(*(*t_client).second_player_fd, yourTurn, strlen(yourTurn));
             }
         }
 

@@ -25,13 +25,15 @@ def run_game(host, port):
             pygame_board.tick()
             
             rec_str = network.readline()
+            print(rec_str)
 
-            if(rec_str == "Your turn\x00"):
+            if(rec_str == "Your turn"):
+                print("Moja tura")
                 my_turn = True
-            elif(rec_str == "You win\x00"):
+            elif(rec_str == "You win"):
                 pygame_board.show_text("You win!")
                 sleep(5)
-            elif(rec_str == "You lose\x00"):
+            elif(rec_str == "You lose"):
                 pygame_board.show_text("You lose")
                 sleep(5)
             else:
