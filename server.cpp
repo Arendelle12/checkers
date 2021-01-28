@@ -10,12 +10,12 @@
 using namespace std;
 
 #define BUF_SIZE 1024
-#define MAX_NUM_OF_CLIENTS 100
+#define MAX_NUM_OF_CLIENTS 2
 #define ROWS 8
 #define COLUMNS 8
 //ROZMIAR TABLICY DO PLANSZY
 #define SIZE 64
-#define MAX_NUM_OF_GAMES 50
+#define MAX_NUM_OF_GAMES 1
 
 struct game
 {
@@ -417,7 +417,7 @@ bool allEnemiesRemoved(char board[], int turn)
     return pieces == 0;
 }
 
-void send(int file_descriptor, char text[], int sizeOfArray)
+void sendMsgWithNewLine(int file_descriptor, char text[], int sizeOfArray)
 {
     write(file_descriptor, text, sizeOfArray);
     write(file_descriptor, "\n", 1);
@@ -517,11 +517,11 @@ void *ThreadBehavior(void *client)
     {
         (*t_client).checkers->board = createBoard();
         (*t_client).checkers->turn = 0;
-        send((*t_client).client_socket_descriptor, (char*)"1", 1);
+        sendMsgWithNewLine((*t_client).client_socket_descriptor, (char*)"1", 1);
     }
     else
     {
-        send((*t_client).client_socket_descriptor, (char*)"2", 1);
+        sendMsgWithNewLine((*t_client).client_socket_descriptor, (char*)"2", 1);
     }
 
     printf("\nTURA: %d\n", (*t_client).checkers->turn);
@@ -553,7 +553,7 @@ void *ThreadBehavior(void *client)
     printf("WATEK - CO ZAWIERA TABLICA KLIENTA\n%s\n", (*t_client).checkers->board);
     
     //WYSLANIE PLANSZY DO KLIENTA
-    send((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
+    sendMsgWithNewLine((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
 
     while(1)
     {    
@@ -567,7 +567,7 @@ void *ThreadBehavior(void *client)
                 //ODCZYTUJEMY RUCH
                 readc = readLine((*t_client).client_socket_descriptor);
                 
-                tab[readc.length()]; 
+                // tab[readc.length()]; 
                 for (unsigned int i = 0; i < sizeof(tab); i++)
                 {
                     tab[i] = readc[i];
@@ -594,7 +594,7 @@ void *ThreadBehavior(void *client)
                 else
                 {
                     printf("ID GRACZA: %d;;; KONIEC NIEPOPRAWNY\n", (*t_client).id);
-                    send((*t_client).client_socket_descriptor, yourTurn, 10);
+                    sendMsgWithNewLine((*t_client).client_socket_descriptor, yourTurn, 10);
                 } 
 
             }
@@ -629,14 +629,14 @@ void *ThreadBehavior(void *client)
                 printf("Wszedlem w if od bicia\n");
                 (*t_client).checkers->board[pieceMove.deletePiece] = '0';
 
-                send((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
-                send(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
+                sendMsgWithNewLine((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
+                sendMsgWithNewLine(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
 
 
                 if(allEnemiesRemoved((*t_client).checkers->board, (*t_client).checkers->turn))
                 {
-                    send((*t_client).client_socket_descriptor, win, 8);
-                    send(*(*t_client).second_player_fd, lose, 9);
+                    sendMsgWithNewLine((*t_client).client_socket_descriptor, win, 8);
+                    sendMsgWithNewLine(*(*t_client).second_player_fd, lose, 9);
                     printf("\n!!!Wygral pierwszy gracz!!!\n");
                     break;
                 }
@@ -645,7 +645,7 @@ void *ThreadBehavior(void *client)
                 if(!isKing && isNextJump((*t_client).checkers->board, end_position, (*t_client).checkers->turn))
                 {
                     previous_jump_end = end_position;
-                    send((*t_client).client_socket_descriptor, yourTurn, 10);
+                    sendMsgWithNewLine((*t_client).client_socket_descriptor, yourTurn, 10);
                 }
                 else
                 {
@@ -655,15 +655,15 @@ void *ThreadBehavior(void *client)
                     pthread_mutex_unlock((*t_client).game_mutex);
 
                     //wysylamy do przeciwnika wiadomosc TWOJ RUCH
-                    send(*(*t_client).second_player_fd, yourTurn, 10);
+                    sendMsgWithNewLine(*(*t_client).second_player_fd, yourTurn, 10);
                 }
                 
             }
             else
             {
                 //wysylamy plansze do obu klientow
-                send((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
-                send(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
+                sendMsgWithNewLine((*t_client).client_socket_descriptor, (*t_client).checkers->board, SIZE);
+                sendMsgWithNewLine(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
 
                 //printf do usuniecia
                 if(print_turn == false){
@@ -680,7 +680,7 @@ void *ThreadBehavior(void *client)
                 }
                 print_turn = true;
                 //wysylamy do przeciwnika wiadomosc TWOJ RUCH
-                send(*(*t_client).second_player_fd, yourTurn, 10);
+                sendMsgWithNewLine(*(*t_client).second_player_fd, yourTurn, 10);
             }
         }
 
@@ -708,7 +708,9 @@ int main(int argc, char* argv[]){
 
     if(argc != 2)
     {
-        printf("Sposob uzycia: ./server numer_portu\n");
+        printf("Sposob uzycia: make run_server port=<numer_portu>\n");
+        printf("LUB\n");
+        printf("Sposob uzycia: ./server <numer_portu>\n");
         exit(1);
     }
     int server_port = atoi(argv[1]);
@@ -800,6 +802,7 @@ int main(int argc, char* argv[]){
 
         //Dodajemy klienta do tablicy clients -> wpisujemy connection_socket_descriptor tam, gdzie jest -1 
         pthread_mutex_lock(&connection_mutex);
+        printf("Mutex LOCKED\n");
 
         if(connected_clients < MAX_NUM_OF_CLIENTS)
         {
@@ -826,6 +829,19 @@ int main(int argc, char* argv[]){
                 player_two_id = client_id - 1;
             }
             //printf("pl2 id po wyliczeniu : %d\n", player_two_id);
+
+            struct client_info *client = (client_info *)malloc(sizeof(struct client_info));
+            (*client).client_socket_descriptor = connection_socket_descriptor;
+            printf("Id klienta: %d\n", client_id);
+            (*client).id = client_id;        
+            (*client).position_in_clients_array = &clients[client_id];
+            (*client).second_player_fd = &clients[player_two_id];
+            (*client).connected_clients = &connected_clients;
+            (*client).connection_mutex = &connection_mutex;
+            (*client).checkers = &games[game_id];
+            (*client).game_mutex = &game_mutex[game_id];
+
+            handleConnection(client);
         }
         else
         {
@@ -833,20 +849,13 @@ int main(int argc, char* argv[]){
             close(connection_socket_descriptor);
         }
 
-        struct client_info *client = (client_info *)malloc(sizeof(struct client_info));
-        (*client).client_socket_descriptor = connection_socket_descriptor;
-        printf("Id klienta: %d\n", client_id);
-        (*client).id = client_id;        
-        (*client).position_in_clients_array = &clients[client_id];
-        (*client).second_player_fd = &clients[player_two_id];
-        (*client).connected_clients = &connected_clients;
-        (*client).connection_mutex = &connection_mutex;
-        (*client).checkers = &games[game_id];
-        (*client).game_mutex = &game_mutex[game_id];
+        
 
         pthread_mutex_unlock(&connection_mutex);
+        printf("Mutex UNLOCKED\n");
+
        
-        handleConnection(client);
+        
         
     }
     close(server_socket_descriptor);
