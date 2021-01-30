@@ -90,3 +90,9 @@ class Board:
         text = font.render(caption, True, RED)
         self.window.blit(text, (160, 220))
         pygame.display.update()
+
+    def show_long_text(self, caption):
+        font = pygame.font.SysFont("ubuntu", 50)
+        text = font.render(caption, True, RED)
+        self.window.blit(text, (20, 220))
+        pygame.display.update()

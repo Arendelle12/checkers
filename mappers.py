@@ -2,7 +2,6 @@ from itertools import islice
 
 #ZAMIANA STRINGA POSTACI 1234 NA LISTE
 def str_to_list(test_str):
-    print("Map: ", test_str)
     return [int(i) for i in test_str]
 
 #ZAMIANA 1D LIST NA 2D

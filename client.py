@@ -25,11 +25,18 @@ def run_game(host, port):
             pygame_board.tick()
             
             rec_str = network.readline()
-            print(rec_str)
+            #print(rec_str)
 
             if(rec_str == "Your turn"):
                 print("Moja tura")
                 my_turn = True
+            elif(rec_str == "Opponent disconnected"):
+                print(rec_str)
+                pygame_board.show_long_text("Opponent disconnected")
+                network.sendall("quit")
+                sleep(10)
+                pygame.quit()
+                exit()
             elif(rec_str == "You win"):
                 pygame_board.show_text("You win!")
                 sleep(5)
