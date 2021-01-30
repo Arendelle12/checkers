@@ -17,7 +17,6 @@ class Network:
     def sendall(self, move):
         byt = bytes(move+"\n", 'utf-8')
         self.client.sendall(byt)
-        print("client send move")
 
     def recv(self, n):
         byt = self.client.recv(n)

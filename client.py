@@ -4,6 +4,8 @@ from board import Board
 from network import Network
 from inputWindow import InputWindow
 from time import sleep
+import signal
+
 
 
 def run_game(host, port):
@@ -12,6 +14,12 @@ def run_game(host, port):
     #game window
     board_2d = []
     with Network(host, port) as network:
+        def signal_handler(signum, frame):
+            print("Signal", signum)
+            pygame.quit()
+            print("quit")
+            network.sendall("quit")
+            exit()
         #narysowanie okna z plansza
         pygame_board = Board()
         pygame_board.draw_squares()
@@ -33,8 +41,9 @@ def run_game(host, port):
             elif(rec_str == "Opponent disconnected"):
                 print(rec_str)
                 pygame_board.show_long_text("Opponent disconnected")
-                network.sendall("quit")
-                sleep(10)
+                print("quit2")
+                network.sendall("quit2")
+                sleep(5)
                 pygame.quit()
                 exit()
             elif(rec_str == "You win"):
@@ -55,8 +64,12 @@ def run_game(host, port):
                 #wyslanie ruchu
                 start_field, end_field = pygame_board.get_moves()
                 move = move_to_string(start_field, end_field)
+                network.sendall("")
                 print(move)
                 network.sendall(move)
                 my_turn = False
+            
+            signal.signal(signal.SIGINT, signal_handler)
+            print("AAAAAA")
 
 input_window = InputWindow(callback=run_game)
