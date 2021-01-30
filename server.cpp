@@ -422,11 +422,19 @@ bool sendMsgWithNewLine(int file_descriptor, const char text[], int sizeOfArray)
 {
     //trzeba wyslac sizeOfArray znakow
     printf("%s\n", text);
+    printf("Size of array : %d\n", sizeOfArray);
     int n = 0;
     int w = 0;
-    while(n < sizeOfArray+1)
+    while(n < sizeOfArray)
     {
-        w = write(file_descriptor, text, sizeOfArray);
+        printf("Size of array - n: %d\n", sizeOfArray-n);
+        char tab[sizeOfArray - n];
+        for(int i = 0; i < sizeOfArray-n; i++)
+        {
+            tab[i] = text[n+i];
+        }
+        printf("Tab w send : %s\n", tab);
+        w = write(file_descriptor, tab, sizeOfArray-n);
         //printf("w = %d\n", w);
         if(w < 0 && errno == EPIPE) 
         {
@@ -434,17 +442,18 @@ bool sendMsgWithNewLine(int file_descriptor, const char text[], int sizeOfArray)
             return false;
         }
         n += w;
-        w = write(file_descriptor, "\n", 1);
-        //printf("w = %d\n", w);
-        if(w < 0 && errno == EPIPE)
-        {
-            printf("Write = -1\n");
-            return false;
-        }
-        n += w;
+        
 
         //cout << n << " zapisanych znakow\n";
     }
+    w = write(file_descriptor, "\n", 1);
+    //printf("w = %d\n", w);
+    if(w < 0 && errno == EPIPE)
+    {
+        printf("Write = -1\n");
+        return false;
+    }
+    n += w;
     return true;
 }
 
