@@ -70,6 +70,6 @@ def run_game(host, port):
                 my_turn = False
             
             signal.signal(signal.SIGINT, signal_handler)
-            print("AAAAAA")
+            #print("AAAAAA")
 
 input_window = InputWindow(callback=run_game)
