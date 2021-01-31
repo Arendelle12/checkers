@@ -129,7 +129,7 @@ void *ThreadBehavior(void *client)
         message_sent = sendMsgWithNewLine(*(*t_client).second_player_fd, (char*)"1", 1);
         if(!message_sent)
         {
-            printf("Wyslanie 1 : %d\n" , message_sent );
+            //printf("Wyslanie 1 : %d\n" , message_sent );
             sendMsgWithNewLine((*t_client).client_socket_descriptor, disconnect, strlen(disconnect));
             disconnect_myself(t_client);
         }
@@ -141,7 +141,7 @@ void *ThreadBehavior(void *client)
         message_sent = sendMsgWithNewLine(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
         if(!message_sent)
         {
-            printf( "Wyslanie planszy 2 : %d\n", message_sent );
+            //printf( "Wyslanie planszy 2 : %d\n", message_sent );
             sendMsgWithNewLine((*t_client).client_socket_descriptor, disconnect, strlen(disconnect));
             disconnect_myself(t_client);
         }
