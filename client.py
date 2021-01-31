@@ -51,10 +51,16 @@ def run_game(host, port):
                 exit()
             elif(rec_str == "You win"):
                 pygame_board.show_text("You win!")
+                network.sendall("quit2")
                 sleep(5)
+                pygame.quit()
+                exit()
             elif(rec_str == "You lose"):
                 pygame_board.show_text("You lose")
+                network.sendall("quit2")
                 sleep(5)
+                pygame.quit()
+                exit()
             else:
                 print("Otrzymano wiadomosc: ")
                 board_2d = convert_board(rec_str)
