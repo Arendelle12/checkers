@@ -17,8 +17,12 @@ def run_game(host, port):
         def signal_handler(signum, frame):
             print("Signal", signum)
             pygame.quit()
-            print("quit")
-            network.sendall("quit")
+            if my_turn:
+                print("quit")
+                network.sendall("quit")
+            else:
+                print("quit2")
+                network.sendall("quit2")
             exit()
         #narysowanie okna z plansza
         pygame_board = Board()
@@ -33,7 +37,6 @@ def run_game(host, port):
             pygame_board.tick()
             
             rec_str = network.readline()
-            #print(rec_str)
 
             if(rec_str == "Your turn"):
                 print("Moja tura")
@@ -64,12 +67,10 @@ def run_game(host, port):
                 #wyslanie ruchu
                 start_field, end_field = pygame_board.get_moves()
                 move = move_to_string(start_field, end_field)
-                network.sendall("")
                 print(move)
                 network.sendall(move)
                 my_turn = False
             
             signal.signal(signal.SIGINT, signal_handler)
-            #print("AAAAAA")
 
 input_window = InputWindow(callback=run_game)
