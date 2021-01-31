@@ -40,7 +40,7 @@ class InputWindow:
         self.box.create_window(200, 190, window = self.entry2)
 
         button1 = tk.Button(text="OK", command = self.get_input, bg = 'blue', fg = 'white')
-        self.box.create_window(150, 250, window = button1)
+        self.box.create_window(200, 250, window = button1)
 
         label3 = tk.Label(self.root, textvariable = self.validationError)
         self.box.create_window(200, 290, window = label3)
