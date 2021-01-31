@@ -12,12 +12,10 @@
 using namespace std;
 
 #define BUF_SIZE 1024
-#define MAX_NUM_OF_CLIENTS 2
-// #define ROWS 8
-// #define COLUMNS 8
+#define MAX_NUM_OF_CLIENTS 100
 //ROZMIAR TABLICY DO PLANSZY
 #define SIZE 64
-#define MAX_NUM_OF_GAMES 1
+#define MAX_NUM_OF_GAMES 50
 
 struct game
 {
@@ -40,33 +38,24 @@ struct client_info
 bool sendMsgWithNewLine(int file_descriptor, const char text[], int sizeOfArray)
 {
     //trzeba wyslac sizeOfArray znakow
-    printf("%s\n", text);
-    printf("Size of array : %d\n", sizeOfArray);
     int n = 0;
     int w = 0;
     while(n < sizeOfArray)
     {
-        printf("Size of array - n: %d\n", sizeOfArray-n);
         char tab[sizeOfArray - n];
         for(int i = 0; i < sizeOfArray-n; i++)
         {
             tab[i] = text[n+i];
         }
-        printf("Tab w send : %s\n", tab);
         w = write(file_descriptor, tab, sizeOfArray-n);
-        //printf("w = %d\n", w);
         if(w < 0 && errno == EPIPE) 
         {
             printf("Write = -1\n");
             return false;
         }
         n += w;
-        
-
-        //cout << n << " zapisanych znakow\n";
     }
     w = write(file_descriptor, "\n", 1);
-    //printf("w = %d\n", w);
     if(w < 0 && errno == EPIPE)
     {
         printf("Write = -1\n");
@@ -84,10 +73,6 @@ string readLine(int file_descriptor)
     {
         char tab[2];
         n = read(file_descriptor, tab, sizeof(tab)-1);
-        //cout <<"Deskryptor w readLine : " << file_descriptor << "\n";
-        //cout << "Odebrano " << n << " bajtow\n";
-        // cout << tab;
-        // cout << "\n";
         if (n <= 0)
         {
             s = "";
@@ -107,24 +92,16 @@ string readLine(int file_descriptor)
 
 void disconnect_myself(struct client_info * client)
 {
-    cout << "Wszedlem w funkcje disconnect\n";
-    cout << "Moj deskryptor : " << (*client).client_socket_descriptor << "\n";
-    //printf("Connected clients na poczatku: %d\n", *(*client).connected_clients);
     pthread_mutex_lock((*client).connection_mutex);
+    printf("Deskryptor w disconnect : %d\n", (*client).client_socket_descriptor);
     *(*client).position_in_clients_array = -1;
     *(*client).connected_clients = *(*client).connected_clients - 1;
-    printf("Connected clients: %d\n", *(*client).connected_clients);
-    printf("Przed zmiana tury dis: %d\n", (*client).checkers->turn);
-
+    printf("Klienci :%d\n", *(*client).connected_clients);
     (*client).checkers->turn = changeTurn((*client).checkers->turn);
-    printf("Po zmiana tury dis: %d\n", (*client).checkers->turn);
-
-    //cout << "Tura w disconnect POTEM : " << (*client).checkers->turn << "\n";
     pthread_mutex_unlock((*client).connection_mutex);
     close((*client).client_socket_descriptor);
     free(client);
-    //cout << "Deskrytpor po free : " << (*client).client_socket_descriptor << "\n";
-    cout << "Pamiec zwolniona\n";
+    printf("Pamiec zwolniona\n");
     pthread_exit(NULL);
 }
 
@@ -134,9 +111,6 @@ void *ThreadBehavior(void *client)
     pthread_detach(pthread_self());
     struct client_info *t_client = (struct client_info *)client;
 
-    //int my_id = (*t_client).id;
-    //printf("My id: %d\n", my_id);
-
     //wiadomosci
     const char *yourTurn = "Your turn";
     const char *win = "You win";
@@ -144,19 +118,8 @@ void *ThreadBehavior(void *client)
     const char *disconnect = "Opponent disconnected";
     
     int player = (*t_client).id %2;
-
     bool message_sent = false;
 
-    //TWORZENIE PLANSZY W STRUKTURZE GAME - DLA PIERWSZEGO GRACZA Z PARY
-    //ORAZ NADANIE TURY
-    //I wyslanie numeru gracza
-    // if(player == 0)
-    // {
-    //     (*t_client).checkers->board = createBoard();
-    //     (*t_client).checkers->turn = 0;
-    //     sendMsgWithNewLine((*t_client).client_socket_descriptor, (char*)"1", 1);
-    // }
-    // else
     if(player == 1)
     {
         (*t_client).checkers->board = createBoard(); 
@@ -166,7 +129,7 @@ void *ThreadBehavior(void *client)
         message_sent = sendMsgWithNewLine(*(*t_client).second_player_fd, (char*)"1", 1);
         if(!message_sent)
         {
-            cout << "Wyslanie 1 : " << message_sent <<"\n";
+            printf("Wyslanie 1 : %d\n" , message_sent );
             sendMsgWithNewLine((*t_client).client_socket_descriptor, disconnect, strlen(disconnect));
             disconnect_myself(t_client);
         }
@@ -178,7 +141,7 @@ void *ThreadBehavior(void *client)
         message_sent = sendMsgWithNewLine(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
         if(!message_sent)
         {
-            cout << "Wyslanie planszy 2 : " << message_sent <<"\n";
+            printf( "Wyslanie planszy 2 : %d\n", message_sent );
             sendMsgWithNewLine((*t_client).client_socket_descriptor, disconnect, strlen(disconnect));
             disconnect_myself(t_client);
         }
@@ -219,7 +182,7 @@ void *ThreadBehavior(void *client)
 
     while(1)
     {    
-        printf("Gracz : %d, TURA : %d\n", player, (*t_client).checkers->turn);
+        // printf("Gracz : %d, TURA : %d\n", player, (*t_client).checkers->turn);
         //JESLI GRACZ MA RUCH
         if((*t_client).checkers->turn == player)
         {  
@@ -232,19 +195,11 @@ void *ThreadBehavior(void *client)
                 cout << "Otrzymana wiadomosc : " << readc << "\n";
                 if(readc == "")
                 {
-                    cout << "Wszedlem w if pusty string\n";
-                    cout << "My descriptoyrtrt : " << (*t_client).client_socket_descriptor << "\n";
-                    bool aaaaaa = sendMsgWithNewLine(*(*t_client).second_player_fd, disconnect, strlen(disconnect));
-                    cout << "aaaaaa: " << aaaaaa << "\n";
-                    if(aaaaaa)
-                    {
-                        cout << "Wyslalem disconnect do przeciwnika\n";
-                        disconnect_myself(t_client);
-                    }
-                    if(!aaaaaa)
-                    {
-                        disconnect_myself(t_client);
-                    }
+                    printf("Wszedlem w if pusty string\n");
+                    printf( "My descriptor : %d\n", (*t_client).client_socket_descriptor );
+                    sendMsgWithNewLine(*(*t_client).second_player_fd, disconnect, strlen(disconnect));
+                    disconnect_myself(t_client);
+                    
                     
                 }
                 if(readc == "quit")
@@ -326,7 +281,7 @@ void *ThreadBehavior(void *client)
                 message_sent = sendMsgWithNewLine(*(*t_client).second_player_fd, (*t_client).checkers->board, SIZE);
                 if(!message_sent)
                 {
-                    cout << "Wyslanie planszy przeciwnikowi : " << message_sent <<"\n";
+                    printf("Wyslanie planszy przeciwnikowi : %d\n", message_sent);
                     sendMsgWithNewLine((*t_client).client_socket_descriptor, disconnect, strlen(disconnect));
                     disconnect_myself(t_client);
                 }
@@ -338,7 +293,7 @@ void *ThreadBehavior(void *client)
                     message_sent = sendMsgWithNewLine(*(*t_client).second_player_fd, lose, strlen(lose));
                     if(!message_sent)
                     {
-                        cout << "Wyslanie przegranej przeciwnikowi : " << message_sent <<"\n";
+                        printf("Wyslanie przegranej przeciwnikowi : %d\n" , message_sent );
                         sendMsgWithNewLine((*t_client).client_socket_descriptor, disconnect, strlen(disconnect));
                         disconnect_myself(t_client);
                     }
@@ -417,23 +372,23 @@ void *ThreadBehavior(void *client)
                 }
             }
         }
-        else
-        {
-            //ODCZYTUJEMY RUCH
-            readc = readLine((*t_client).client_socket_descriptor);
-            if(readc == "quit")
-            {
-                printf("ELSE quit\n");
-                sendMsgWithNewLine(*(*t_client).second_player_fd, disconnect, strlen(disconnect));
-                disconnect_myself(t_client);
-            }
-            if(readc == "quit2")
-            {
-                printf("ELSE quit2\n");
-                disconnect_myself(t_client);
-            }
-            cout << readc << "\n";
-        }
+        // else
+        // {
+        //     //ODCZYTUJEMY RUCH
+        //     readc = readLine((*t_client).client_socket_descriptor);
+        //     if(readc == "quit")
+        //     {
+        //         printf("ELSE quit\n");
+        //         sendMsgWithNewLine(*(*t_client).second_player_fd, disconnect, strlen(disconnect));
+        //         disconnect_myself(t_client);
+        //     }
+        //     if(readc == "quit2")
+        //     {
+        //         printf("ELSE quit2\n");
+        //         disconnect_myself(t_client);
+        //     }
+        //     cout << readc << "\n";
+        // }
 
         print_turn = false;
     }
