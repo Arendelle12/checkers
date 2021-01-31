@@ -149,10 +149,10 @@ void *ThreadBehavior(void *client)
     //ODBIERAMY RUCH A WYSYLAMY PLANSZE
     char tab[BUF_SIZE];
 
-    //odbieramy napis od klienta o parzystym id
+    //odbieramy napis od klienta 
     //zamieniamy napis na tablice
     //zamieniamy tablice na napis
-    //wysylamy napis do klienta o nieparzystym id
+    //wysylamy napis do przeciwnika
     string readc = "";
     int start_position;
     int end_position;
